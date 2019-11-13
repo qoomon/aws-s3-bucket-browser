@@ -6,15 +6,22 @@
   <title>S3 Browser</title>
   <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
-  <style>
-  body {
-    width: 100vw;
-    height: 100vh;
-  }
-  </style>
+  <script>
+    const config = {
+      title: "AWS S3 Bucket Browser",
+      subtitle:"made with ♥ by qoomon",
+      logo: "https://www.edrawsoft.com/symbols/awsstoragecontentanddelivery/s3.png",
+      // try getting get s3 bucket url from query parameter 'bucket'
+      // else assume this file is hosted at root level of an S3 bucket
+      bucketUrl: new URL(window.location).searchParams.get('bucket') 
+        || window.location.href.split('?')[0].replace(/\/[^\/]+$/, '')
+      // or set S3 bucket url explicitly
+      // bucketUrl: 'http://data.openspending.org.s3-eu-west-1.amazonaws.com'
+    }
+  </script>
 </head>
 
-<body class="notification">
+<body class="notification" style="width: 100vw; height: 100vh;">
   <div id="app" class="section">
     <div class="container">
       <div class="level">
@@ -63,20 +70,7 @@
 
   <script src="https://unpkg.com/vue"></script>
   <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
-  
   <script>
-    const config = {
-      // try getting get s3 bucket url from query parameter 'bucket'
-      // assume this file is hosted at root level of an s3 bucket url
-      bucketUrl: new URL(window.location).searchParams.get('bucket') 
-        || window.location.href.split('?')[0].replace(/\/[^\/]+$/, ''),
-      // or set explicit s3 bucekt url,
-      // bucketUrl: 'http://data.openspending.org.s3-eu-west-1.amazonaws.com',
-      title: "AWS S3 Bucket Browser",
-      subtitle:"made with ♥ by qoomon",
-      logo: "https://www.edrawsoft.com/symbols/awsstoragecontentanddelivery/s3.png"
-    }
-
     new Vue({
       el: '#app',
       data: {
