@@ -143,7 +143,7 @@
         async loadPathContent(pathPrefix) {
           pathPrefix = pathPrefix || ''
 
-          let listBucketResultResponse = await fetch(`${config.bucketUrl}/?list-type=2&delimiter=/&prefix=${pathPrefix}`)
+          let listBucketResultResponse = await fetch(`${config.bucketUrl}?list-type=2&delimiter=/&prefix=${pathPrefix}`)
           // TODO &ContinuationToken=ContinuationToken
           let listBucketResultXml = await listBucketResultResponse.text();
 
