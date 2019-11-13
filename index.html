@@ -15,7 +15,6 @@
       bucketUrl: searchParams.get('bucket') || window.location.href.split(/[?#]/)[0].replace(/\/[^\/]+$/, ''),
       pageSize: 5
     }
-console.log(config.bucketUrl);
   </script>
 </head>
 
@@ -34,15 +33,35 @@ console.log(config.bucketUrl);
         </div>
       </div>
     
-      <div class="buttons">
-        <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
-          type="is-info" rounded
-          tag="a" :href="breadcrump.url" 
-          icon-pack="fab"
-          :icon-left="index === 0 ? 'bitbucket' : ''"
-          target="">
-          {{breadcrump.name}}
-        </b-button>
+      <div class="container">
+        <div class="buttons is-pulled-left  ">
+          <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
+            type="is-info" rounded
+            tag="a" :href="breadcrump.url" 
+            icon-pack="fab"
+            :icon-left="index === 0 ? 'bitbucket' : ''"
+            target="">
+            {{breadcrump.name}}
+          </b-button>
+        </div>
+        <div class="buttons is-pulled-right">
+          <b-button
+            type="is-info" rounded
+            icon-pack="fas"
+            icon-left="angle-left"
+            @click="previousPage"
+            :disabled="previousContinuationTokens.length === 0"
+            >
+          </b-button>
+          <b-button
+            type="is-info" rounded
+            icon-pack="fas"
+            icon-right="angle-right"
+            @click="nextPage"
+            :disabled="!nextContinuationToken"
+            >
+          </b-button>
+        </div>
       </div>
 
       <b-table :data="pathContentTableData" :hoverable="true">
@@ -66,23 +85,25 @@ console.log(config.bucketUrl);
         </template>
       </b-table>
       
-      <div class="buttons" style="margin-top: 2rem;">
-        <b-button
-          type="is-info" rounded outlined
-          icon-pack="fas"
-          icon-left="angle-left"
-          @click="previousPage"
-          :disabled="previousContinuationTokens.length === 0"
-          >
-        </b-button>
-        <b-button
-          type="is-info" rounded outlined
-          icon-pack="fas"
-          icon-right="angle-right"
-          @click="nextPage"
-          :disabled="!nextContinuationToken"
-          >
-        </b-button>
+      <div class="container">
+        <div class="buttons is-pulled-right" style="margin-top: 2rem;">
+          <b-button
+            type="is-info" rounded
+            icon-pack="fas"
+            icon-left="angle-left"
+            @click="previousPage"
+            :disabled="previousContinuationTokens.length === 0"
+            >
+          </b-button>
+          <b-button
+            type="is-info" rounded
+            icon-pack="fas"
+            icon-right="angle-right"
+            @click="nextPage"
+            :disabled="!nextContinuationToken"
+            >
+          </b-button>
+        </div>
       </div>
     </div>    
   </div>
