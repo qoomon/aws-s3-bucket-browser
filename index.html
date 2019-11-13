@@ -12,12 +12,14 @@
       subtitle: "made with ♥ by qoomon",
       logo: "https://www.edrawsoft.com/symbols/awsstoragecontentanddelivery/s3.png",
       // assumes that this file is located at root level of S3 bucket
-      bucketUrl: searchParams.get('bucket') || window.location.href.split('?')[0].replace(/\/[^\/]+$/, '')
+      bucketUrl: searchParams.get('bucket') || window.location.href.split(/[?#]/)[0].replace(/\/[^\/]+$/, ''),
+      pageSize: 5
     }
+console.log(config.bucketUrl);
   </script>
 </head>
 
-<body class="notification" style="width: 100vw; height: 100vh;">
+<body class="notification" style="width: 100vw; min-height: 100vh;">
   <div id="app" class="section">
     <div class="container">
       <div class="level">
@@ -41,9 +43,9 @@
         </b-button>
       </div>
 
-      <b-table :data="pathContentTableData" :hoverable="true" >
+      <b-table :data="pathContentTableData" :hoverable="true">
         <template slot-scope="props">
-          <b-table-column label="Name" sortable>
+          <b-table-column field="name" label="Name" sortable>
             <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
             <b-button 
               type="is-info" inverted rounded 
@@ -53,14 +55,33 @@
               {{ props.row.name }}
             </b-button>
           </b-table-column>
-          <b-table-column label="Size" sortable numeric>
+          <b-table-column field="size" label="Size" sortable numeric>
             {{ props.row.size | formatBytes}}
           </b-table-column>
-          <b-table-column label="Last Modified" sortable centered>
+          <b-table-column field="date" label="Last Modified" sortable centered>
             {{ props.row.lastModified | formatDate }}
           </b-table-column>
         </template>
       </b-table>
+      
+      <div class="buttons" style="margin-top: 2rem;">
+        <b-button
+          type="is-info" rounded outlined
+          icon-pack="fas"
+          icon-right="angle-left"
+          @click="previousPage"
+          :disabled="previousContinuationTokens.length === 0"
+          >
+        </b-button>
+        <b-button
+          type="is-info" rounded outlined
+          icon-pack="fas"
+          icon-right="angle-right"
+          @click="nextPage"
+          :disabled="!nextContinuationToken"
+          >
+        </b-button>
+      </div>
     </div>    
   </div>
 
@@ -68,12 +89,23 @@
   <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
   <script>
     document.title = config.title
+    
+    function escapeHTML(unsafeText) {
+        let div = document.createElement('div');
+        div.innerText = unsafeText;
+        return div.innerHTML;
+    }
+    
     new Vue({
       el: '#app',
       data: {
         config,
-        pathPrefix: "",
-        pathContentTableData: []
+        pathPrefix: undefined,
+        pathContentTableData: [],
+        
+        previousContinuationTokens: [],
+        continuationToken: undefined,
+        nextContinuationToken: undefined
       },
       computed: {
         pathBreadcrumps() {
@@ -104,6 +136,101 @@
           return this.pathPrefix.replace(/[^/]+\/?$/, '')
         }
       },
+      watch: {
+        pathPrefix() {
+          this.previousContinuationTokens = []
+          this.continuationToken = undefined
+          this.nextContinuationToken = undefined
+          this.refresh()
+        }
+      },
+      methods: {
+        previousPage(){
+          if(this.previousContinuationTokens.length > 0){
+            this.continuationToken = this.previousContinuationTokens.pop()
+            this.refresh()
+          }
+        },
+        nextPage(){
+          if(this.nextContinuationToken){
+            this.previousContinuationTokens.push(this.continuationToken)
+            this.continuationToken = this.nextContinuationToken
+            this.refresh()
+          }
+        },
+        async refresh() {
+          let listBucketResult
+          try {
+            let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`
+            bucketListApiUrl += `&prefix=${this.pathPrefix}`
+            bucketListApiUrl += `&delimiter=/`
+            bucketListApiUrl += `&max-keys=${this.config.pageSize}`
+            if(this.continuationToken){
+              bucketListApiUrl += `&continuation-token=${encodeURIComponent(this.continuationToken)}`
+            }
+            let listBucketResultResponse = await fetch(bucketListApiUrl)
+            let listBucketResultXml = await listBucketResultResponse.text();
+            
+            listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml");
+            if (!listBucketResult.querySelector('ListBucketResult')){
+              throw Error("List bucket response does not contain <ListBucketResult> tag!")
+            }
+          } catch (error) {
+            this.$buefy.notification.open({
+                    message: escapeHTML(error.message),
+                    type: 'is-danger',
+                    duration: 60000,
+                    position: 'is-bottom'
+                })
+            throw error
+          }
+          let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
+          this.nextContinuationToken =  nextContinuationTokenTag && nextContinuationTokenTag.textContent
+          let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")].map(tag => ({
+            prefix: tag.querySelector('Prefix').textContent
+          }))
+          let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")].map(tag => ({
+            key: tag.querySelector('Key').textContent,
+            size: parseInt(tag.querySelector('Size').textContent),
+            lastModified: new Date(tag.querySelector('LastModified').textContent)
+          }))
+
+          this.pathContentTableData = []
+          commonPrefixes.forEach(prefix => {
+            this.pathContentTableData.push({
+              type: 'prefix',
+              name: prefix.prefix.replace(/^.*\/(?=.+)/, ''),
+              
+              prefix: prefix.prefix
+            })
+          })
+          contents.forEach(content => {
+            // exclude fake folder entries
+            if (content.key === pathPrefix) {
+              return
+            }
+            this.pathContentTableData.push({
+              type: 'content',
+              name: content.key.replace(/^.*\//, ''),
+              size: content.size,
+              lastModified: content.lastModified,
+
+              key: content.key,
+              url: `${this.config.bucketUrl}/${content.key}`
+            })
+          })
+        }
+      },
+      async mounted() {
+        if (!window.location.hash) {
+          window.location.hash = '/'
+        }
+        window.onhashchange = () => {
+          let hashUrl = new URL('x:' + window.location.hash.replace(/^#/, ''))
+          this.pathPrefix = hashUrl.pathname.replace(/^\//, '')
+        }
+        window.onhashchange()
+      },
       filters: {
         formatBytes(size) {
           if(!size){
@@ -129,60 +256,6 @@
           }
           return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
         }
-      },
-      methods: {
-        async loadPathContent(pathPrefix) {
-          pathPrefix = pathPrefix || ''
-
-          let listBucketResultResponse = await fetch(`${config.bucketUrl}?list-type=2&delimiter=/&prefix=${pathPrefix}`)
-          // TODO &ContinuationToken=ContinuationToken
-          let listBucketResultXml = await listBucketResultResponse.text();
-
-          let domParser = new DOMParser();
-          let listBucketResult = domParser.parseFromString(listBucketResultXml, "text/xml");
-          let commonPrefixes = listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")
-          let contents = listBucketResult.querySelectorAll("ListBucketResult > Contents")
-
-          this.pathPrefix = pathPrefix
-          this.pathContentTableData = []
-          commonPrefixes.forEach(commonPrefix => {
-            let prefix = commonPrefix.querySelector('Prefix').textContent
-            this.pathContentTableData.push({
-              type: 'prefix',
-              name: prefix.replace(/^.*\/(?=.+)/, ''),
-              
-              prefix
-            })
-          })
-          contents.forEach(content => {
-            let key = content.querySelector('Key').textContent
-            // exclude fake folder entries
-            if (key === pathPrefix) {
-              return
-            }
-            this.pathContentTableData.push({
-              type: 'content',
-              name: key.replace(/^.*\//, ''),
-              lastModified: new Date(content.querySelector('LastModified').textContent),
-              size: parseInt(content.querySelector('Size').textContent),
-
-              key,
-              url: `${config.bucketUrl}/${key}`
-            })
-          })
-        }
-      },
-      async mounted() {
-        if (!window.location.hash) {
-          window.location.hash = '/'
-        }
-        window.onhashchange = () => {
-          let hashUrl = new URL('x:' + window.location.hash.replace(/^#/, ''))
-          let hashPathname = hashUrl.pathname
-          let contentPrefix = hashPathname.replace(/^\//, '')
-          this.loadPathContent(contentPrefix)
-        }
-        window.onhashchange()
       }
     });
   </script>
