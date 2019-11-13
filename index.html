@@ -6,16 +6,13 @@
   <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
   <script>
+    const searchParams = new URL(window.location).searchParams
     const config = {
       title: "AWS S3 Bucket Browser",
-      subtitle:"made with ♥ by qoomon",
+      subtitle: "made with ♥ by qoomon",
       logo: "https://www.edrawsoft.com/symbols/awsstoragecontentanddelivery/s3.png",
-      // try getting get s3 bucket url from query parameter 'bucket'
-      // else assume this file is hosted at root level of an S3 bucket
-      bucketUrl: new URL(window.location).searchParams.get('bucket') 
-        || window.location.href.split('?')[0].replace(/\/[^\/]+$/, '')
-      // or set S3 bucket url explicitly
-      // bucketUrl: 'http://data.openspending.org.s3-eu-west-1.amazonaws.com'
+      // assumes that this file is located at root level of S3 bucket
+      bucketUrl: searchParams.get('bucket') || window.location.href.split('?')[0].replace(/\/[^\/]+$/, '')
     }
   </script>
 </head>
