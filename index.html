@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>S3 Browser</title>
+  <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+  <style>
+  body {
+    width: 100vw;
+    height: 100vh;
+  }
+  </style>
+</head>
+
+<body class="notification">
+  <div id="app" class="section">
+    <div class="container">
+      <div class="level">
+        <div class="level-left">
+          <figure class="level-item image is-128x128" style="margin-right: 1.5rem;">
+            <img :src="config.logo"/>
+          </figure>
+          <div>
+            <h1 class="title">{{config.title}}</h1>
+            <h2 class="subtitle">{{config.subtitle}}</h2>
+          </div>
+        </div>
+      </div>
+    
+      <div class="buttons">
+        <b-button v-for="breadcrump in pathBreadcrumps" v-bind:key="breadcrump.url" 
+          type="is-info" rounded
+          tag="a" :href="breadcrump.url" 
+          target="">
+          {{breadcrump.name}}
+        </b-button>
+      </div>
+
+      <b-table :data="pathContentTableData" :hoverable="true" >
+        <template slot-scope="props">
+          <b-table-column label="Name" sortable>
+            <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
+            <b-button 
+              type="is-info" inverted rounded 
+              tag="a" :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
+              target=""
+              style="display: inline;">
+              {{ props.row.name }}
+            </b-button>
+          </b-table-column>
+          <b-table-column label="Size" sortable numeric>
+            {{ props.row.size | formatBytes}}
+          </b-table-column>
+          <b-table-column label="Last Modified" sortable centered>
+            {{ props.row.lastModified | formatDate }}
+          </b-table-column>
+        </template>
+      </b-table>
+    </div>    
+  </div>
+
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+  
+  <script>
+    const config = {
+      // try getting get s3 bucket url from query parameter 'bucket'
+      // assume this file is hosted at root level of an s3 bucket url
+      bucketUrl: new URL(window.location).searchParams.get('bucket') 
+        || window.location.href.split('?')[0].replace(/\/[^\/]+$/, ''),
+      // or set explicit s3 bucekt url,
+      // bucketUrl: 'http://data.openspending.org.s3-eu-west-1.amazonaws.com',
+      title: "Otto Mobile App - Artifact Store",
+      subtitle:"Android & iOS",
+      logo: "https://www.otto.de/san/resources/san/img/header/otto_logo_2015.png"
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        config,
+        pathPrefix: "",
+        pathContentTableData: []
+      },
+      computed: {
+        pathBreadcrumps() {
+          let result = [{
+            name: "/",
+            url: '#/'
+          }]
+
+          if (!this.pathPrefix) {
+            return result
+          }
+
+          let pathPrefixParts = this.pathPrefix.split(/(?<=\/)/)
+
+          pathPrefixParts.forEach((part, index) => {
+            result.push({
+              name: part,
+              url: '#/' + pathPrefixParts.slice(0, index).join('') + part
+            })
+          })
+
+          return result
+        },
+        parentPathPrefix() {
+          if (!this.pathPrefix) {
+            return
+          }
+          return this.pathPrefix.replace(/[^/]+\/?$/, '')
+        }
+      },
+      filters: {
+        formatBytes(size) {
+          if(!size){
+            return '-'
+          }
+          const KB = 1024;
+          if (size < KB) {
+              return size + '  B';
+          }
+          const MB = 1000000;
+          if (size < MB) {
+              return (size / KB).toFixed(0) + ' KB';
+          } 
+          const GB = 1000000000;
+          if (size < GB) {
+              return (size / MB).toFixed(2) + ' MB';
+          }
+          return (size / GB).toFixed(2) + ' GB';
+        },
+        formatDate(date) {
+          if(!date){
+            return '-'
+          }
+          return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
+        }
+      },
+      methods: {
+        async loadPathContent(pathPrefix) {
+          pathPrefix = pathPrefix || ''
+
+          let listBucketResultResponse = await fetch(`${config.bucketUrl}/?list-type=2&delimiter=/&prefix=${pathPrefix}`)
+          // TODO &ContinuationToken=ContinuationToken
+          let listBucketResultXml = await listBucketResultResponse.text();
+
+          let domParser = new DOMParser();
+          let listBucketResult = domParser.parseFromString(listBucketResultXml, "text/xml");
+          let commonPrefixes = listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")
+          let contents = listBucketResult.querySelectorAll("ListBucketResult > Contents")
+
+          this.pathPrefix = pathPrefix
+          this.pathContentTableData = []
+          commonPrefixes.forEach(commonPrefix => {
+            let prefix = commonPrefix.querySelector('Prefix').textContent
+            this.pathContentTableData.push({
+              type: 'prefix',
+              name: prefix.replace(/^.*\/(?=.+)/, ''),
+              
+              prefix
+            })
+          })
+          contents.forEach(content => {
+            let key = content.querySelector('Key').textContent
+            // exclude fake folder entries
+            if (key === pathPrefix) {
+              return
+            }
+            this.pathContentTableData.push({
+              type: 'content',
+              name: key.replace(/^.*\//, ''),
+              lastModified: new Date(content.querySelector('LastModified').textContent),
+              size: parseInt(content.querySelector('Size').textContent),
+
+              key,
+              url: `${config.bucketUrl}/${key}`
+            })
+          })
+        }
+      },
+      async mounted() {
+        if (!window.location.hash) {
+          window.location.hash = '/'
+        }
+        window.onhashchange = () => {
+          let hashUrl = new URL('x:' + window.location.hash.replace(/^#/, ''))
+          let hashPathname = hashUrl.pathname
+          let contentPrefix = hashPathname.replace(/^\//, '')
+          this.loadPathContent(contentPrefix)
+        }
+        window.onhashchange()
+      }
+    });
+  </script>
+</body>
+
+</html>
