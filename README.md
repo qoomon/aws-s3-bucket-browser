@@ -6,7 +6,7 @@ S3 Bucket index.html to browse bucket content
 ## Instalation
 
 * Just put the `index.html` into root level of S3 bucket.
-* Adjust `titel` `subtitle` `logoUrl` within `index.html` if needed.
+* Adjust `titel`, `subtitle`, `logoUrl` and `pageSize` within `index.html` if needed.
 * Open `<S3_BUCKET_URL>/index.html` in your browser.
 
 **or**
