@@ -233,29 +233,28 @@
           }))
 
           this.pathContentTableData = []
-          commonPrefixes.forEach(prefix => {
-            this.pathContentTableData.push({
-              type: 'prefix',
-              name: prefix.prefix.replace(/^.*\/(?=.+)/, ''),
-              
-              prefix: prefix.prefix
+          commonPrefixes
+            .forEach(prefix => {
+              this.pathContentTableData.push({
+                type: 'prefix',
+                name: prefix.prefix.replace(/^.*\/(?=.+)/, ''),
+                
+                prefix: prefix.prefix
+              })
             })
-          })
-          contents.forEach(content => {
-            // exclude fake folder entries
-            if (content.key === this.pathPrefix) {
-              return
-            }
-            this.pathContentTableData.push({
-              type: 'content',
-              name: content.key.replace(/^.*\//, ''),
-              size: content.size,
-              lastModified: content.lastModified,
+          contents
+            .filter(content => !content.key.endsWith('/')) // exclude fake folder entries
+            .forEach(content => {
+              this.pathContentTableData.push({
+                type: 'content',
+                name: content.key.replace(/^.*\//, ''),
+                size: content.size,
+                lastModified: content.lastModified,
 
-              key: content.key,
-              url: `${this.config.bucketUrl}/${content.key}`
+                key: content.key,
+                url: `${this.config.bucketUrl}/${content.key}`
+              })
             })
-          })
         }
       },
       async mounted() {
