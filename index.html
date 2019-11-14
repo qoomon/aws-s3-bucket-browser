@@ -73,7 +73,7 @@
 
       <b-table :data="pathContentTableData" :hoverable="true">
         <template slot-scope="props">
-          <b-table-column field="type" label="&#x2219;" centered sortable width="1">
+          <b-table-column field="type" label="Type" centered sortable width="1">
             <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
           </b-table-column>
           <b-table-column field="name" label="Name" sortable>
