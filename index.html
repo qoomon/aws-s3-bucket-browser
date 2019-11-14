@@ -44,7 +44,8 @@
             {{breadcrump.name}}
           </b-button>
         </div>
-        <div class="buttons is-pulled-right">
+        <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+          class="buttons is-pulled-right">
           <b-button
             type="is-info" rounded
             icon-pack="fas"
@@ -66,13 +67,15 @@
 
       <b-table :data="pathContentTableData" :hoverable="true">
         <template slot-scope="props">
-          <b-table-column field="name" label="Name" sortable>
+          <b-table-column field="type" sortable width="1">
             <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
+          </b-table-column>
+          <b-table-column field="name" label="Name" sortable>
             <b-button 
               type="is-info" inverted rounded 
               tag="a" :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
               target=""
-              style="display: inline;">
+              style="display: inline; left: -1em;">
               {{ props.row.name }}
             </b-button>
           </b-table-column>
@@ -86,7 +89,8 @@
       </b-table>
       
       <div class="container">
-        <div class="buttons is-pulled-right" style="margin-top: 2rem;">
+        <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+          class="buttons is-pulled-right" style="margin-top: 2rem;">
           <b-button
             type="is-info" rounded
             icon-pack="fas"
@@ -96,7 +100,7 @@
             >
           </b-button>
           <b-button
-            type="is-info" rounded
+            type="is-info" roundedt
             icon-pack="fas"
             icon-right="angle-right"
             @click="nextPage"
@@ -231,7 +235,7 @@
           })
           contents.forEach(content => {
             // exclude fake folder entries
-            if (content.key === pathPrefix) {
+            if (content.key === this.pathPrefix) {
               return
             }
             this.pathContentTableData.push({
