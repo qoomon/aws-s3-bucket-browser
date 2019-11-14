@@ -84,8 +84,8 @@
             <b-button 
               type="is-info" inverted rounded 
               tag="a" 
-              :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
-              :target="props.row.type === 'content' ? '_blank' : false"
+              :href="props.row.type === 'content' ? props.row.url : `#/${props.row.prefix}`" 
+              :download="props.row.type === 'content' ? props.row.name :  false" 
               :style="{ height: 'auto', userSelect: 'text', background: 'none', padding: '0', whiteSpace: 'unset' }">
               {{ props.row.name }}
             </b-button>
@@ -249,7 +249,7 @@
             })
           contents
             .filter(content => !content.key.endsWith('/')) // exclude folder entries
-            .filter(content => !content.key.match(config.keyExcludePattern))
+            .filter(content => !content.key.match(config.keyExcludePattern || false))
             .forEach(content => {
               this.pathContentTableData.push({
                 type: 'content',
