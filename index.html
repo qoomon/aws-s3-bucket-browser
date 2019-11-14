@@ -8,9 +8,10 @@
       title: "AWS S3 Bucket Browser",
       subtitle: "made with ♥ by qoomon",
       logo: "https://www.edrawsoft.com/symbols/awsstoragecontentanddelivery/s3.png",
-      // assumes that this file is located at root level of S3 bucket
+      // ensure that this file is located at root level of S3 bucket
       bucketUrl: searchParams.get('bucket') || window.location.href.split(/[?#]/)[0].replace(/\/[^\/]+$/, ''),
-      pageSize: 50
+      pageSize: 50,
+      keyExcludePattern: /^index\.html$/
     }
   </script>
   
@@ -247,7 +248,8 @@
               })
             })
           contents
-            .filter(content => !content.key.endsWith('/')) // exclude fake folder entries
+            .filter(content => !content.key.endsWith('/')) // exclude folder entries
+            .filter(content => !content.key.match(config.keyExcludePattern))
             .forEach(content => {
               this.pathContentTableData.push({
                 type: 'content',
