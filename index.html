@@ -81,14 +81,14 @@
               tag="a" 
               :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
               :download="props.row.type === 'content'"
-              style="display: inline; left: -1em;">
+              style="display: inline; left: -1em; outline: none !important; border: none !important;">
               {{ props.row.name }}
             </b-button>
           </b-table-column>
           <b-table-column field="size" label="Size" sortable numeric>
             {{ props.row.size | formatBytes}}
           </b-table-column>
-          <b-table-column field="date" label="Last Modified" sortable centered>
+          <b-table-column field="lastModified" label="Last Modified" sortable centered>
             {{ props.row.lastModified | formatDate }}
           </b-table-column>
         </template>
