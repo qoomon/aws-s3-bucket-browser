@@ -84,7 +84,7 @@
               type="is-info" inverted rounded 
               tag="a" 
               :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
-              :download="props.row.type === 'content'"
+              :download="props.row.name"
               :style="{ height: 'auto', userSelect: 'text', background: 'none', padding: '0', whiteSpace: 'unset' }">
               {{ props.row.name }}
             </b-button>
