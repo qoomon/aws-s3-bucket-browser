@@ -2,9 +2,6 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
   <script>
     const searchParams = new URL(window.location).searchParams
     const config = {
@@ -16,6 +13,14 @@
       pageSize: 1000
     }
   </script>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/vue@2.6.10"></script>
+  <script src="https://unpkg.com/buefy@0.8.6/dist/buefy.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/buefy@0.8.6/dist/buefy.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
 </head>
 
 <body class="notification" style="width: 100vw; min-height: 100vh;">
@@ -33,7 +38,7 @@
         </div>
       </div>
     
-      <div class="container">
+      <div class="container is-clearfix">
         <div class="buttons is-pulled-left  ">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
             type="is-info" rounded
@@ -65,16 +70,17 @@
         </div>
       </div>
 
-      <b-table :data="pathContentTableData" :hoverable="true">
+      <b-table :data="pathContentTableData" :hoverable="true" :mobile-cards="false">
         <template slot-scope="props">
-          <b-table-column field="type" sortable width="1">
+          <b-table-column field="type" label="&#x2219;" centered sortable width="1">
             <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
           </b-table-column>
           <b-table-column field="name" label="Name" sortable>
             <b-button 
               type="is-info" inverted rounded 
-              tag="a" :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
-              target=""
+              tag="a" 
+              :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
+              :download="props.row.type === 'content'"
               style="display: inline; left: -1em;">
               {{ props.row.name }}
             </b-button>
@@ -100,7 +106,7 @@
             >
           </b-button>
           <b-button
-            type="is-info" roundedt
+            type="is-info" rounded
             icon-pack="fas"
             icon-right="angle-right"
             @click="nextPage"
@@ -112,8 +118,6 @@
     </div>    
   </div>
 
-  <script src="https://unpkg.com/vue"></script>
-  <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
   <script>
     document.title = config.title
     
@@ -122,6 +126,10 @@
         div.innerText = unsafeText;
         return div.innerHTML;
     }
+    
+    Vue.use(Buefy.default, {
+    	defaultIconPack: 'fa'
+    })
     
     new Vue({
       el: '#app',
@@ -251,6 +259,7 @@
         }
       },
       async mounted() {
+        this.$buefydefaultIconPack= 'fas'
         if (!window.location.hash) {
           window.location.hash = '/'
         }
