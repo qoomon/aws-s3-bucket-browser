@@ -45,7 +45,8 @@
             tag="a" :href="breadcrump.url" 
             icon-pack="fab"
             :icon-left="index === 0 ? 'bitbucket' : ''"
-            target="">
+            target=""
+            style="">
             {{breadcrump.name}}
           </b-button>
         </div>
@@ -70,7 +71,7 @@
         </div>
       </div>
 
-      <b-table :data="pathContentTableData" :hoverable="true" :mobile-cards="false">
+      <b-table :data="pathContentTableData" :hoverable="true">
         <template slot-scope="props">
           <b-table-column field="type" label="&#x2219;" centered sortable width="1">
             <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
@@ -81,7 +82,7 @@
               tag="a" 
               :href="props.row.type === 'prefix' ? `#/${props.row.prefix}` : props.row.url" 
               :download="props.row.type === 'content'"
-              style="display: inline; left: -1em; outline: none !important; border: none !important;">
+              :style="{ height: 'auto', userSelect: 'text', background: 'none', padding: '0', whiteSpace: 'unset' }">
               {{ props.row.name }}
             </b-button>
           </b-table-column>
