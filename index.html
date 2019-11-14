@@ -158,7 +158,7 @@
             return result
           }
 
-          let pathPrefixParts = this.pathPrefix.split(/(?<=\/)/)
+          let pathPrefixParts = this.pathPrefix.match(/([^/]+\/?)/g)
 
           pathPrefixParts.forEach((part, index) => {
             result.push({
