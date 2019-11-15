@@ -1,22 +1,25 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <script>
     const searchParams = new URL(window.location).searchParams
     const config = {
-      title: "AWS S3 Bucket Browser",
-      subtitle: "made with ♥ by qoomon",
-      logo: "https://www.edrawsoft.com/symbols/awsstoragecontentanddelivery/s3.png",
       // ensure that this file is located at root level of S3 bucket
       bucketUrl: searchParams.get('bucket') || window.location.href.split(/[?#]/)[0].replace(/\/[^\/]+$/, ''),
+      keyExcludePattern: /^index\.html$/,
       pageSize: 50,
-      keyExcludePattern: /^index\.html$/
+      
+      title: 'AWS S3 Bucket Browser',
+      subtitle: 'made with ♥ by qoomon',
+      logo: 'logo.png',
+      favicon: 'favicon.ico'
     }
   </script>
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link id="favicon" rel="shortcut icon"/>
   <script src="https://unpkg.com/vue@2.6.10"></script><script>Vue.config.productionTip = false;</script>
   <script src="https://unpkg.com/buefy@0.8.6/dist/buefy.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/buefy@0.8.6/dist/buefy.min.css">
@@ -30,6 +33,7 @@
   <a href="https://github.com/qoomon/aws-s3-bucket-browser" style="position: absolute; top: 0; right: 0;"><img width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" data-recalc-dims="1"></a>
   
   <div id="app" class="section">
+  
     <div class="container">
       <div class="level">
         <div class="level-left">
@@ -47,13 +51,15 @@
         <div class="buttons is-pulled-left">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
             type="is-info" rounded
-            tag="a" :href="breadcrump.url" 
-            icon-pack="fab"
-            :icon-left="index === 0 ? 'bitbucket' : ''"
+            tag="a" 
+            :href="breadcrump.url" 
+            icon-pack="fas"
+            :icon-left="index == 0 ? 'folder' : ''"
             target=""
-            style=""
+            :style="{ fontWeight: index == 0 ? 'bolder': '' }"
             >
-            {{breadcrump.name}}
+            <template v-if="index == 0">/</template>
+            <template v-else="index > 0">{{breadcrump.name}}</template>
           </b-button>
         </div>
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
@@ -84,7 +90,7 @@
             label="Type" 
             centered  width="1"
             >
-            <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
+            <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"></b-icon>
           </b-table-column>
           <b-table-column 
             field="name" sortable
@@ -153,6 +159,7 @@
   
   <script>
     document.title = config.title;
+    document.getElementById('favicon').href = config.favicon;
 
     Vue.use(Buefy.default, {
     	defaultIconPack: 'fa'
@@ -172,7 +179,7 @@
       },
       computed: {
         pathBreadcrumps() {
-          return this.hashUrl.pathname.match(/\/|[^/]+\/?/g)
+          return this.hashUrl.pathname.match(/(?=[/])|[^/]+[/]?/g)
             .map((pathPrefixPart, index, pathPrefixParts) => ({
               name: pathPrefixPart,
               url: '#/' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
