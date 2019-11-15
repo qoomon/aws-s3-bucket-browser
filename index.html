@@ -86,7 +86,7 @@
               tag="a" 
               :href="props.row.type === 'content' ? props.row.url : `#/${props.row.prefix}`" 
               :download="props.row.type === 'content' ? props.row.name :  false" 
-              :style="{ height: 'auto', userSelect: 'text', background: 'none', padding: '0', whiteSpace: 'unset' }">
+              :style="{ height: 'auto', userSelect: 'text', background: 'none', boxShadow: 'none', padding: '0', whiteSpace: 'unset'}">
               {{ props.row.name }}
             </b-button>
           </b-table-column>
@@ -140,7 +140,8 @@
       el: '#app',
       data: {
         config,
-        pathPrefix: undefined,
+        hashUrl: new URL('/', location),
+        
         pathContentTableData: [],
         
         previousContinuationTokens: [],
@@ -149,35 +150,15 @@
       },
       computed: {
         pathBreadcrumps() {
-          let result = [{
-            name: "/",
-            url: '#/'
-          }]
-
-          if (!this.pathPrefix) {
-            return result
-          }
-
-          let pathPrefixParts = this.pathPrefix.match(/([^/]+\/?)/g)
-
-          pathPrefixParts.forEach((part, index) => {
-            result.push({
-              name: part,
-              url: '#/' + pathPrefixParts.slice(0, index).join('') + part
-            })
-          })
-
-          return result
-        },
-        parentPathPrefix() {
-          if (!this.pathPrefix) {
-            return
-          }
-          return this.pathPrefix.replace(/[^/]+\/?$/, '')
+          return this.hashUrl.pathname.match(/\/|[^/]+\/?/g)
+            .map((pathPrefixPart, index, pathPrefixParts) => ({
+              name: pathPrefixPart,
+              url: '#/' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
+            }))
         }
       },
       watch: {
-        pathPrefix() {
+        hashUrl() {
           this.previousContinuationTokens = []
           this.continuationToken = undefined
           this.nextContinuationToken = undefined
@@ -202,8 +183,10 @@
           let listBucketResult
           try {
             let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`
-            bucketListApiUrl += `&prefix=${this.pathPrefix}`
             bucketListApiUrl += `&delimiter=/`
+            let pathPrefix = this.hashUrl.pathname.replace(/^\//,'')
+            bucketListApiUrl += `&prefix=${pathPrefix}`
+            
             if(this.config.pageSize){
               bucketListApiUrl += `&max-keys=${this.config.pageSize}`
             }
@@ -249,7 +232,7 @@
             })
           contents
             .filter(content => !content.key.endsWith('/')) // exclude folder entries
-            .filter(content => !content.key.match(config.keyExcludePattern || false))
+            .filter(content => !config.keyExcludePattern || !content.key.match(config.keyExcludePattern))
             .forEach(content => {
               this.pathContentTableData.push({
                 type: 'content',
@@ -264,13 +247,14 @@
         }
       },
       async mounted() {
-        this.$buefydefaultIconPack= 'fas'
-        if (!window.location.hash) {
-          window.location.hash = '/'
-        }
         window.onhashchange = () => {
-          let hashUrl = new URL('x:' + window.location.hash.replace(/^#/, ''))
-          this.pathPrefix = hashUrl.pathname.replace(/^\//, '')
+          let locationHash = window.location.hash.replace(/^#/, '')
+          let normalizedLocationHash = `/${locationHash.replace(/^\/+/, '')}`
+          if(locationHash === normalizedLocationHash){
+            this.hashUrl = new URL(normalizedLocationHash, location)
+          } else {
+            window.location.hash = normalizedLocationHash
+          }
         }
         window.onhashchange()
       },
