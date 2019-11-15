@@ -128,7 +128,7 @@
       </b-table>
 
       <div class="container is-clearfix" style="margin-top: 1rem;">
-        <div v-show="true || nextContinuationToken || previousContinuationTokens.length > 0"
+        <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
           <b-button
             type="is-info" rounded
@@ -161,7 +161,7 @@
     new Vue({
       el: '#app',
       data: {
-        config,
+        config, // defined in <head> section
         hashUrl: new URL('/', location),
         
         pathContentTableData: [],
