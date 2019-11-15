@@ -153,10 +153,12 @@
   
   <script>
     document.title = config.title;
-
+    
+    Vue.config.productionTip = false;
+    
     Vue.use(Buefy.default, {
     	defaultIconPack: 'fa'
-    })
+    });
     
     new Vue({
       el: '#app',
