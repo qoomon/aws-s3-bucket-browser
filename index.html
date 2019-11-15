@@ -86,7 +86,8 @@
           <b-table-column 
             field="type" sortable
             label="Type" 
-            centered  width="1"
+            centered width="1"
+          
             >
             <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"></b-icon>
           </b-table-column>
@@ -103,30 +104,28 @@
               {{ props.row.name }}
             </b-button>
           </b-table-column>
-          <b-table-column 
+          <b-table-column
             field="size" numeric sortable
             label="Size"
+            :style="{display: isMobileCardBreakoint && !props.row.size ? 'none' : ''}"
             >
             {{ props.row.size | formatBytes}}
           </b-table-column>
           <b-table-column 
               field="lastModified" sortable
               label="Last Modified"
-              centered 
+              centered
+              :style="{display: isMobileCardBreakoint && !props.row.lastModified ? 'none' : ''}" 
               >
-              <template v-if="props.row.lastModified">
-                <b-tooltip 
-                  type="is-info" 
-                  position="is-left" 
-                  animated
-                  :label="moment(props.row.lastModified).format('hh:mm:ss - dddd, MMMM Do, YYYY')"
-                  >
-                  {{ moment(props.row.lastModified).fromNow() }}
-                </b-tooltip>
-              </template>
-              <template v-else>
-                -
-              </template>
+              <b-tooltip v-if="props.row.lastModified"
+                type="is-info" 
+                position="is-left" 
+                animated
+                :label="moment(props.row.lastModified).format('hh:mm:ss - dddd, MMMM Do, YYYY')"
+                >
+                {{ moment(props.row.lastModified).fromNow() }}
+              </b-tooltip>
+              <template v-else>-</template>
           </b-table-column>
         </template>
       </b-table>
@@ -166,6 +165,7 @@
     new Vue({
       el: '#app',
       data: {
+        windowWidth: window.innerWidth,
         config, // defined in <head> section
         hashUrl: new URL('/', location),
         
@@ -182,6 +182,9 @@
               name: pathPrefixPart,
               url: '#/' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
             }));
+        },
+        isMobileCardBreakoint(){
+          return this.windowWidth <= 768
         }
       },
       watch: {
@@ -275,6 +278,10 @@
         }
       },
       async mounted() {
+        window.addEventListener('resize', () => {
+          this.windowWidth = window.innerWidth;
+        });
+        
         window.onhashchange = () => {
           let locationHash = window.location.hash.replace(/^#/, '');
           let normalizedLocationHash = `/${locationHash.replace(/^\/+/, '')}`;
@@ -285,6 +292,9 @@
           }
         }
         window.onhashchange();
+      },
+      async beforeDestroy() {
+        window.removeEventListener('resize');
       },
       filters: {
         formatBytes(size) {
@@ -322,6 +332,12 @@
   </script>
   
   <style>
+    .table {
+      background-color: transparent;
+    }
+    .table > tbody > tr {
+      background-color: #fff !important;
+    }
     .button.is-text {
       height: auto;
       user-select: text;
