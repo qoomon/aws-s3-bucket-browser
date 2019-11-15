@@ -17,7 +17,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://unpkg.com/vue@2.6.10"></script>
+  <script src="https://unpkg.com/vue@2.6.10"></script><script>Vue.config.productionTip = false;</script>
   <script src="https://unpkg.com/buefy@0.8.6/dist/buefy.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/buefy@0.8.6/dist/buefy.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
@@ -153,9 +153,7 @@
   
   <script>
     document.title = config.title;
-    
-    Vue.config.productionTip = false;
-    
+
     Vue.use(Buefy.default, {
     	defaultIconPack: 'fa'
     });
