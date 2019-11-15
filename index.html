@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="https://unpkg.com/buefy@0.8.6/dist/buefy.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
   <link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
+  <script src="https://unpkg.com/moment@2.14.1/min/moment.min.js"></script>
 </head>
 
 <body class="notification" style="width: 100vw; min-height: 100vh;">
@@ -43,14 +44,15 @@
       </div>
     
       <div class="container is-clearfix">
-        <div class="buttons is-pulled-left  ">
+        <div class="buttons is-pulled-left">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
             type="is-info" rounded
             tag="a" :href="breadcrump.url" 
             icon-pack="fab"
             :icon-left="index === 0 ? 'bitbucket' : ''"
             target=""
-            style="">
+            style=""
+            >
             {{breadcrump.name}}
           </b-button>
         </div>
@@ -77,31 +79,57 @@
 
       <b-table :data="pathContentTableData" :hoverable="true">
         <template slot-scope="props">
-          <b-table-column field="type" label="Type" centered sortable width="1">
+          <b-table-column 
+            field="type" sortable
+            label="Type" 
+            centered  width="1"
+            >
             <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file'"></b-icon>
           </b-table-column>
-          <b-table-column field="name" label="Name" sortable>
+          <b-table-column 
+            field="name" sortable
+            label="Name"
+            >
             <b-button 
-              type="is-info" inverted rounded 
+              type="is-info is-text" inverted rounded 
               tag="a" 
               :href="props.row.type === 'content' ? props.row.url : `#/${props.row.prefix}`" 
-              :download="props.row.type === 'content' ? props.row.name :  false" 
-              :style="{ height: 'auto', userSelect: 'text', background: 'none', boxShadow: 'none', padding: '0', whiteSpace: 'unset'}">
+              :download="props.row.type === 'content' ? props.row.name :  false"
+              >
               {{ props.row.name }}
             </b-button>
           </b-table-column>
-          <b-table-column field="size" label="Size" sortable numeric>
+          <b-table-column 
+            field="size" numeric sortable
+            label="Size"
+            >
             {{ props.row.size | formatBytes}}
           </b-table-column>
-          <b-table-column field="lastModified" label="Last Modified" sortable centered>
-            {{ props.row.lastModified | formatDate }}
+          <b-table-column 
+              field="lastModified" sortable
+              label="Last Modified"
+              centered 
+              >
+              <template v-if="props.row.lastModified">
+                <b-tooltip 
+                  type="is-info" 
+                  position="is-left" 
+                  animated
+                  :label="moment(props.row.lastModified).format('hh:mm:ss - dddd, MMMM Do, YYYY')"
+                  >
+                  {{ moment(props.row.lastModified).fromNow() }}
+                </b-tooltip>
+              </template>
+              <template v-else>
+                -
+              </template>
           </b-table-column>
         </template>
       </b-table>
-      
-      <div class="container">
-        <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
-          class="buttons is-pulled-right" style="margin-top: 2rem;">
+
+      <div class="container is-clearfix" style="margin-top: 1rem;">
+        <div v-show="true || nextContinuationToken || previousContinuationTokens.length > 0"
+          class="buttons is-pulled-right">
           <b-button
             type="is-info" rounded
             icon-pack="fas"
@@ -122,16 +150,10 @@
       </div>
     </div>    
   </div>
-
+  
   <script>
-    document.title = config.title
-    
-    function escapeHTML(unsafeText) {
-        let div = document.createElement('div');
-        div.innerText = unsafeText;
-        return div.innerHTML;
-    }
-    
+    document.title = config.title;
+
     Vue.use(Buefy.default, {
     	defaultIconPack: 'fa'
     })
@@ -154,51 +176,52 @@
             .map((pathPrefixPart, index, pathPrefixParts) => ({
               name: pathPrefixPart,
               url: '#/' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
-            }))
+            }));
         }
       },
       watch: {
         hashUrl() {
-          this.previousContinuationTokens = []
-          this.continuationToken = undefined
-          this.nextContinuationToken = undefined
-          this.refresh()
+          this.previousContinuationTokens = [];
+          this.continuationToken = undefined;
+          this.nextContinuationToken = undefined;
+          this.refresh();
         }
       },
       methods: {
+        moment: moment,
         previousPage(){
           if(this.previousContinuationTokens.length > 0){
-            this.continuationToken = this.previousContinuationTokens.pop()
-            this.refresh()
+            this.continuationToken = this.previousContinuationTokens.pop();
+            this.refresh();
           }
         },
         nextPage(){
           if(this.nextContinuationToken){
-            this.previousContinuationTokens.push(this.continuationToken)
-            this.continuationToken = this.nextContinuationToken
-            this.refresh()
+            this.previousContinuationTokens.push(this.continuationToken);
+            this.continuationToken = this.nextContinuationToken;
+            this.refresh();
           }
         },
         async refresh() {
-          let listBucketResult
+          let listBucketResult;
           try {
-            let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`
-            bucketListApiUrl += `&delimiter=/`
-            let pathPrefix = this.hashUrl.pathname.replace(/^\//,'')
-            bucketListApiUrl += `&prefix=${pathPrefix}`
+            let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`;
+            bucketListApiUrl += `&delimiter=/`;
+            let pathPrefix = this.hashUrl.pathname.replace(/^\//,'');
+            bucketListApiUrl += `&prefix=${pathPrefix}`;
             
             if(this.config.pageSize){
-              bucketListApiUrl += `&max-keys=${this.config.pageSize}`
+              bucketListApiUrl += `&max-keys=${this.config.pageSize}`;
             }
             if(this.continuationToken){
-              bucketListApiUrl += `&continuation-token=${encodeURIComponent(this.continuationToken)}`
+              bucketListApiUrl += `&continuation-token=${encodeURIComponent(this.continuationToken)}`;
             }
-            let listBucketResultResponse = await fetch(bucketListApiUrl)
+            let listBucketResultResponse = await fetch(bucketListApiUrl);
             let listBucketResultXml = await listBucketResultResponse.text();
             
             listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml");
             if (!listBucketResult.querySelector('ListBucketResult')){
-              throw Error("List bucket response does not contain <ListBucketResult> tag!")
+              throw Error("List bucket response does not contain <ListBucketResult> tag!");
             }
           } catch (error) {
             this.$buefy.notification.open({
@@ -206,21 +229,21 @@
                     type: 'is-danger',
                     duration: 60000,
                     position: 'is-bottom'
-                })
-            throw error
+                });
+            throw error;
           }
-          let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
-          this.nextContinuationToken =  nextContinuationTokenTag && nextContinuationTokenTag.textContent
+          let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken");
+          this.nextContinuationToken =  nextContinuationTokenTag && nextContinuationTokenTag.textContent;
           let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")].map(tag => ({
             prefix: tag.querySelector('Prefix').textContent
-          }))
+          }));
           let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")].map(tag => ({
             key: tag.querySelector('Key').textContent,
             size: parseInt(tag.querySelector('Size').textContent),
             lastModified: new Date(tag.querySelector('LastModified').textContent)
-          }))
+          }));
 
-          this.pathContentTableData = []
+          this.pathContentTableData = [];
           commonPrefixes
             .forEach(prefix => {
               this.pathContentTableData.push({
@@ -229,7 +252,7 @@
                 
                 prefix: prefix.prefix
               })
-            })
+            });
           contents
             .filter(content => !content.key.endsWith('/')) // exclude folder entries
             .filter(content => !config.keyExcludePattern || !content.key.match(config.keyExcludePattern))
@@ -243,20 +266,20 @@
                 key: content.key,
                 url: `${this.config.bucketUrl}/${content.key}`
               })
-            })
+            });
         }
       },
       async mounted() {
         window.onhashchange = () => {
-          let locationHash = window.location.hash.replace(/^#/, '')
-          let normalizedLocationHash = `/${locationHash.replace(/^\/+/, '')}`
+          let locationHash = window.location.hash.replace(/^#/, '');
+          let normalizedLocationHash = `/${locationHash.replace(/^\/+/, '')}`;
           if(locationHash === normalizedLocationHash){
-            this.hashUrl = new URL(normalizedLocationHash, location)
+            this.hashUrl = new URL(normalizedLocationHash, location);
           } else {
-            window.location.hash = normalizedLocationHash
+            window.location.hash = normalizedLocationHash;
           }
         }
-        window.onhashchange()
+        window.onhashchange();
       },
       filters: {
         formatBytes(size) {
@@ -285,7 +308,27 @@
         }
       }
     });
+    
+    function escapeHTML(unsafeText) {
+        let div = document.createElement('div');
+        div.innerText = unsafeText;
+        return div.innerHTML;
+    }
   </script>
+  
+  <style>
+    .button.is-text {
+      height: auto;
+      user-select: text;
+      box-shadow: none;
+      white-space: unset;
+      background: none;
+      background-color: transparent !important;
+      text-decoration: none;
+      padding: 0;
+    }
+  </style>
+
 </body>
 
 </html>
