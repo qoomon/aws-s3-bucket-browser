@@ -81,7 +81,10 @@
         </div>
       </div>
 
-      <b-table :data="pathContentTableData" :hoverable="true">
+      <b-table 
+        v-if="!isMobileBreakoint"
+        :data="pathContentTableData" 
+        >
         <template slot-scope="props">
           <b-table-column 
             field="type" sortable
@@ -114,23 +117,71 @@
             {{ props.row.size | formatBytes}}
           </b-table-column>
           <b-table-column 
-              field="lastModified" sortable
-              label="Last Modified"
+              field="dateModified" sortable
+              label="Date Modified"
               centered
               >
-              <b-tooltip v-if="props.row.lastModified"
-                type="is-info" 
-                position="is-left" 
+              <b-tooltip
+                type="is-light"
+                size="is-small"
+                position="is-left"
                 animated
-                :label="moment(props.row.lastModified).format('hh:mm:ss - dddd, MMMM Do, YYYY')"
+                :label="props.row.dateModified | formatDate"
                 >
-                {{ moment(props.row.lastModified).fromNow() }}
+                {{ props.row.dateModified | formatDateRelative }}
               </b-tooltip>
-              <template v-else>-</template>
           </b-table-column>
         </template>
       </b-table>
-
+      
+      <b-table 
+        v-if="isMobileBreakoint"
+        :data="pathContentTableData"
+        >
+        <template slot-scope="props">
+          <b-table-column class="mobile-row">
+            <div class="mobile-row-title">
+              <b-icon class="mobile-row-title-icon"
+                pack="far" 
+                :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
+                >
+              </b-icon>
+              <b-button 
+                type="is-info is-text" inverted rounded 
+                tag="a" 
+                :href="props.row.type === 'content' ? props.row.url : `#/${props.row.prefix}`" 
+                :download="props.row.type === 'content' ? props.row.name :  false"
+                style="text-align: left"
+                >
+                {{ props.row.name }}
+              </b-button>
+            </div>
+            <div class="mobile-row-subtitle">
+              <span>
+                {{ props.row.size | formatBytes}}
+              </span>
+              <b-tooltip
+                type="is-light"
+                position="is-top"
+                animated
+                :label="props.row.dateModified | formatDate"
+                >
+                {{ props.row.dateModified | formatDateRelative }}
+              </b-tooltip>
+            </div>
+          </b-table-column>
+          
+          <!-- dummy colums to make mobile rows sortable -->
+          <b-table-column v-show='false' field="type" sortable label="Type">
+          </b-table-column>
+          <b-table-column v-show='false' field="name" sortable label="Name">
+          </b-table-column>
+          <b-table-column v-show='false' field="size" sortable label="Size">
+          </b-table-column>
+          <b-table-column v-show='false' field="dateModified" sortable label="Date Modified">
+          </b-table-column>
+        </template>
+      </b-table>
       <div class="container is-clearfix" style="margin-top: 1rem;">
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
@@ -184,7 +235,7 @@
               url: '#/' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
             }));
         },
-        isMobileCardBreakoint(){
+        isMobileBreakoint(){
           return this.windowWidth <= 768
         }
       },
@@ -249,7 +300,7 @@
           let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")].map(tag => ({
             key: tag.querySelector('Key').textContent,
             size: parseInt(tag.querySelector('Size').textContent),
-            lastModified: new Date(tag.querySelector('LastModified').textContent)
+            dateModified: new Date(tag.querySelector('LastModified').textContent)
           }));
 
           this.pathContentTableData = [];
@@ -270,7 +321,7 @@
                 type: 'content',
                 name: content.key.replace(/^.*\//, ''),
                 size: content.size,
-                lastModified: content.lastModified,
+                dateModified: content.dateModified,
 
                 key: content.key,
                 url: `${this.config.bucketUrl}/${content.key}`
@@ -320,7 +371,13 @@
           if(!date){
             return '-'
           }
-          return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
+          return moment(date).format('dddd, MMMM Do, YYYY • hh:mm:ss')
+        },
+        formatDateRelative(date) {
+          if(!date){
+            return '-'
+          }
+          return moment(date).fromNow()
         }
       }
     });
@@ -349,9 +406,30 @@
       text-decoration: none;
       padding: 0;
     }
-    
-    td[data-label].hideLabel:before {
-      visibility: hidden;
+    .mobile-row {
+      display: block !important;
+    }
+    .mobile-row::before {
+      display: none !important;
+    }
+    .mobile-row-title {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    .mobile-row-title-icon {
+      margin-right: 0.5rem;
+    }
+    .mobile-row-subtitle {
+      display: flex;
+      justify-content: flex-start;
+      margin-left: 2.1rem;
+      color: grey;
+      font-size: 0.85rem;
+      padding-top: 0.4rem;
+    }
+    .mobile-row-subtitle > *{
+      margin-right: 2rem;
     }
   </style>
   
