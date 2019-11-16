@@ -87,9 +87,12 @@
             field="type" sortable
             label="Type" 
             centered width="1"
-          
             >
-            <b-icon pack="far" :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"></b-icon>
+            <b-icon 
+              pack="far" 
+              :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
+              >
+            </b-icon>
           </b-table-column>
           <b-table-column 
             field="name" sortable
@@ -107,7 +110,6 @@
           <b-table-column
             field="size" numeric sortable
             label="Size"
-            :style="{display: isMobileCardBreakoint && !props.row.size ? 'none' : ''}"
             >
             {{ props.row.size | formatBytes}}
           </b-table-column>
@@ -115,7 +117,6 @@
               field="lastModified" sortable
               label="Last Modified"
               centered
-              :style="{display: isMobileCardBreakoint && !props.row.lastModified ? 'none' : ''}" 
               >
               <b-tooltip v-if="props.row.lastModified"
                 type="is-info" 
@@ -347,6 +348,10 @@
       background-color: transparent !important;
       text-decoration: none;
       padding: 0;
+    }
+    
+    td[data-label].hideLabel:before {
+      visibility: hidden;
     }
   </style>
   
