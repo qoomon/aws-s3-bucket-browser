@@ -210,7 +210,8 @@
           </b-button>
         </div>
       </div>
-    </div>    
+    </div>
+    <div class="footer-bucket-url">Bucket: {{ config.bucketUrl }}</div>    
   </div>
   
   <script>
@@ -441,6 +442,16 @@
     }
     .mobile-date-tooltip::before {
       display: none;
+    }
+    .footer-bucket-url {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin-bottom: 0.5rem;
+      font-size: small;
+      text-align: center;
+      color: darkgray;
     }
   </style>
   
