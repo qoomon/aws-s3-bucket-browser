@@ -44,7 +44,7 @@
           </div>
         </div>
       </div>
-    
+      
       <div class="container is-clearfix">
         <div class="buttons is-pulled-left">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
@@ -54,7 +54,7 @@
             icon-pack="fas"
             :icon-left="index == 0 ? 'folder' : ''"
             target=""
-            :style="{ fontWeight: index == 0 ? 'bolder': '' }"
+            :style="{ fontWeight: index == 0 ? 'bolder': ''}"
             >
             <template v-if="index == 0">/</template>
             <template v-else="index > 0">{{breadcrump.name}}</template>
@@ -89,7 +89,7 @@
           <b-table-column 
             field="type" sortable
             label="Type" 
-            centered width="1"
+            centered width="24"
             >
             <b-icon 
               pack="far" 
@@ -113,13 +113,14 @@
           <b-table-column
             field="size" numeric sortable
             label="Size"
+            centered width="128"
             >
             {{ props.row.size | formatBytes}}
           </b-table-column>
           <b-table-column 
               field="dateModified" sortable
               label="Date Modified"
-              centered
+              centered width="256"
               >
               <b-tooltip
                 type="is-light"
@@ -141,11 +142,13 @@
         <template slot-scope="props">
           <b-table-column class="mobile-row">
             <div class="mobile-row-title">
-              <b-icon class="mobile-row-title-icon"
-                pack="far" 
-                :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
-                >
-              </b-icon>
+              <div>
+                <b-icon class="mobile-row-title-icon"
+                  pack="far" 
+                  :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
+                  >
+                </b-icon>
+              </div>
               <b-button 
                 type="is-info is-text" inverted rounded 
                 tag="a" 
@@ -156,18 +159,22 @@
                 {{ props.row.name }}
               </b-button>
             </div>
-            <div class="mobile-row-subtitle">
-              <span>
-                {{ props.row.size | formatBytes}}
-              </span>
+            <div 
+              v-if="props.row.size || props.row.dateModified"
+              class="mobile-row-subtitle"
+              >
               <b-tooltip
                 type="is-light"
-                position="is-top"
+                position="is-right"
                 animated
                 :label="props.row.dateModified | formatDate"
+                class="mobile-date-tooltip"
                 >
                 {{ props.row.dateModified | formatDateRelative }}
               </b-tooltip>
+              <div>
+                {{ props.row.size | formatBytes}}
+              </div>
             </div>
           </b-table-column>
           
@@ -397,14 +404,14 @@
       background-color: #fff !important;
     }
     .button.is-text {
-      height: auto;
-      user-select: text;
-      box-shadow: none;
-      white-space: unset;
-      background: none;
+      height: auto !important;
+      user-select: text !important;
+      box-shadow: none !important;
+      white-space: unset !important;
+      background: none !important;
       background-color: transparent !important;
-      text-decoration: none;
-      padding: 0;
+      text-decoration: none !important;
+      padding: 0 !important;
     }
     .mobile-row {
       display: block !important;
@@ -422,14 +429,18 @@
     }
     .mobile-row-subtitle {
       display: flex;
-      justify-content: flex-start;
-      margin-left: 2.1rem;
+      justify-content: space-between;
+      margin: 0rem 2.1rem ;
       color: grey;
       font-size: 0.85rem;
       padding-top: 0.4rem;
     }
-    .mobile-row-subtitle > *{
-      margin-right: 2rem;
+    .mobile-date-tooltip::after {
+      left: -1rem !important;
+      padding: .25rem .55rem;
+    }
+    .mobile-date-tooltip::before {
+      display: none;
     }
   </style>
   
