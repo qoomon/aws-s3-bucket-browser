@@ -3,7 +3,7 @@ S3 Bucket index.html to browse bucket content
 
 ![](favicon.ico)
 
-**[Demo](https://qoomon.github.io/aws-s3-bucket-browser/?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)**
+## [Demo](https://qoomon.github.io/aws-s3-bucket-browser/?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)
 
 ## Instalation
 
