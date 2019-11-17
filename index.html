@@ -89,6 +89,7 @@
             field="type" sortable
             label="Type" 
             centered width="24"
+            style="vertical-align: middle;"
             >
             <b-icon 
               pack="far" 
@@ -105,6 +106,7 @@
               tag="a" 
               :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`" 
               :download="props.row.type === 'content' ? props.row.name :  false"
+              style="text-align: left;"
               >
               {{ props.row.name }}
             </b-button>
@@ -236,7 +238,7 @@
       data: {
         windowWidth: window.innerWidth,
         config, // defined in <head> section
-        hashUrl: new URL('/', location),
+        pathPrefix: '',
         
         pathContentTableData: [],
         
@@ -246,7 +248,7 @@
       },
       computed: {
         pathBreadcrumps() {
-          return this.hashUrl.pathname.match(/(?=[/])|[^/]+[/]?/g)
+          return `/${this.pathPrefix}`.match(/(?=[/])|[^/]+[/]?/g)
             .map((pathPrefixPart, index, pathPrefixParts) => ({
               name: pathPrefixPart,
               url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
@@ -257,7 +259,7 @@
         }
       },
       watch: {
-        hashUrl() {
+        pathPrefix() {
           this.previousContinuationTokens = [];
           this.continuationToken = undefined;
           this.nextContinuationToken = undefined;
@@ -284,8 +286,7 @@
           try {
             let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`;
             bucketListApiUrl += `&delimiter=/`;
-            let pathPrefix = this.hashUrl.pathname.replace(/^\//,'');
-            bucketListApiUrl += `&prefix=${pathPrefix}`;
+            bucketListApiUrl += `&prefix=${this.pathPrefix}`;
             
             if(this.config.pageSize){
               bucketListApiUrl += `&max-keys=${this.config.pageSize}`;
@@ -347,11 +348,12 @@
         }
       },
       async mounted() {
+        this.refresh();
+        
         window.onhashchange = () => {
-          let locationHash = window.location.hash.replace(/^#\/?/, '/');
-          this.hashUrl = new URL(locationHash, location);
-        }
-        window.onhashchange();
+          let locationHash = window.location.hash.replace(/^#/, '');
+          this.pathPrefix = locationHash.replace(/^\//, '');
+        };
         
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth;
