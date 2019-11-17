@@ -238,7 +238,7 @@
       data: {
         windowWidth: window.innerWidth,
         config, // defined in <head> section
-        pathPrefix: '',
+        pathPrefix: null,
         
         pathContentTableData: [],
         
@@ -348,12 +348,12 @@
         }
       },
       async mounted() {
-        this.refresh();
-        
         window.onhashchange = () => {
           let locationHash = window.location.hash.replace(/^#/, '');
           this.pathPrefix = locationHash.replace(/^\//, '');
         };
+        window.onhashchange();
+
         
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth;
