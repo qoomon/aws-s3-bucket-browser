@@ -3,13 +3,12 @@
 
 <head>
   <script>
-    const searchParams = new URL(window.location).searchParams
     const config = {
-      // ensure that this file is located at root level of S3 bucket
-      bucketUrl: searchParams.get('bucket') || window.location.href.split(/[?#]/)[0].replace(/\/[^\/]+$/, ''),
+      // bucketUrl defaults to this file location
+      //   ensure it's on bucket root leve level (e.g. key: 'index.html')
+      // bucketUrl: https://s3.eu-central-1.amazonaws.com/example-bucket
       keyExcludePattern: /^index\.html$/,
       pageSize: 50,
-      
       title: 'AWS S3 Bucket Browser',
       subtitle: 'made with ♥ by qoomon',
       logo: 'logo.png',
@@ -104,7 +103,7 @@
             <b-button 
               type="is-info is-text" inverted rounded 
               tag="a" 
-              :href="props.row.type === 'content' ? props.row.url : `#/${props.row.prefix}`" 
+              :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`" 
               :download="props.row.type === 'content' ? props.row.name :  false"
               >
               {{ props.row.name }}
@@ -152,7 +151,7 @@
               <b-button 
                 type="is-info is-text" inverted rounded 
                 tag="a" 
-                :href="props.row.type === 'content' ? props.row.url : `#/${props.row.prefix}`" 
+                :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`" 
                 :download="props.row.type === 'content' ? props.row.name :  false"
                 style="text-align: left"
                 >
@@ -215,6 +214,16 @@
   </div>
   
   <script>
+    
+    if(!config.bucketUrl){
+      let searchParams = new URL(window.location).searchParams;
+      config.bucketUrl = searchParams.get('bucket') 
+        // assume this file is located ar root level of the bucket
+        // e.g. https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
+        || window.location.href.split(/[?#]/)[0].replace(/\/[^\/]+$/, '')
+    }
+  
+  
     document.title = config.title;
     document.getElementById('favicon').href = config.favicon;
 
@@ -240,7 +249,7 @@
           return this.hashUrl.pathname.match(/(?=[/])|[^/]+[/]?/g)
             .map((pathPrefixPart, index, pathPrefixParts) => ({
               name: pathPrefixPart,
-              url: '#/' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
+              url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
             }));
         },
         isMobileBreakoint(){
@@ -338,20 +347,15 @@
         }
       },
       async mounted() {
+        window.onhashchange = () => {
+          let locationHash = window.location.hash.replace(/^#\/?/, '/');
+          this.hashUrl = new URL(locationHash, location);
+        }
+        window.onhashchange();
+        
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth;
         });
-        
-        window.onhashchange = () => {
-          let locationHash = window.location.hash.replace(/^#/, '');
-          let normalizedLocationHash = `/${locationHash.replace(/^\/+/, '')}`;
-          if(locationHash === normalizedLocationHash){
-            this.hashUrl = new URL(normalizedLocationHash, location);
-          } else {
-            window.location.hash = normalizedLocationHash;
-          }
-        }
-        window.onhashchange();
       },
       async beforeDestroy() {
         window.removeEventListener('resize');
