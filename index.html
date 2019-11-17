@@ -89,7 +89,6 @@
             field="type" sortable
             label="Type" 
             centered width="24"
-            style="vertical-align: middle;"
             >
             <b-icon 
               pack="far" 
@@ -141,15 +140,17 @@
         :data="pathContentTableData"
         >
         <template slot-scope="props">
-          <b-table-column class="mobile-row">
+          <b-table-column 
+            class="mobile-row"
+            >
+            <b-icon 
+              class="mobile-row-title-icon"
+              pack="far" 
+              :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
+              >
+            </b-icon>
+            
             <div class="mobile-row-title">
-              <div>
-                <b-icon class="mobile-row-title-icon"
-                  pack="far" 
-                  :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
-                  >
-                </b-icon>
-              </div>
               <b-button 
                 type="is-info is-text" inverted rounded 
                 tag="a" 
@@ -160,22 +161,26 @@
                 {{ props.row.name }}
               </b-button>
             </div>
+            
             <div 
               v-if="props.row.size || props.row.dateModified"
               class="mobile-row-subtitle"
               >
+              <div>
+                {{ props.row.size | formatBytes}}
+              </div>
               <b-tooltip
                 type="is-light"
-                position="is-right"
+                position="is-left"
                 animated
                 :label="props.row.dateModified | formatDate"
                 class="mobile-date-tooltip"
                 >
+
                 {{ props.row.dateModified | formatDateRelative }}
+
               </b-tooltip>
-              <div>
-                {{ props.row.size | formatBytes}}
-              </div>
+              
             </div>
           </b-table-column>
           
@@ -190,6 +195,7 @@
           </b-table-column>
         </template>
       </b-table>
+      
       <div class="container is-clearfix" style="margin-top: 1rem;">
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
@@ -420,34 +426,38 @@
       text-decoration: none !important;
       padding: 0 !important;
     }
+    
+    .table td {
+      vertical-align: middle !important;
+      align-items: center;
+      color: dimgray;
+    }
+    
     .mobile-row {
-      display: block !important;
+      justify-content: flex-start !important;
     }
     .mobile-row::before {
       display: none !important;
+    }
+    
+    .mobile-row-title-icon {
+      margin-right: 1rem;
     }
     .mobile-row-title {
       display: flex;
       justify-content: flex-start;
       align-items: center;
     }
-    .mobile-row-title-icon {
-      margin-right: 0.5rem;
-    }
     .mobile-row-subtitle {
-      display: flex;
-      justify-content: space-between;
-      margin: 0rem 2.1rem ;
-      color: grey;
+      flex: 1;
+      height: 3rem;
+      flex-basis: 6rem;
+      flex-shrink: 0;
       font-size: 0.85rem;
-      padding-top: 0.4rem;
+      line-height: 1.5rem;
     }
     .mobile-date-tooltip::after {
-      left: -1rem !important;
       padding: .25rem .55rem;
-    }
-    .mobile-date-tooltip::before {
-      display: none;
     }
     .footer-bucket-url {
       position: absolute;
