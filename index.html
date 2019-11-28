@@ -104,7 +104,6 @@
               type="is-info is-text" inverted rounded 
               tag="a" 
               :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`" 
-              :download="props.row.type === 'content' ? props.row.name :  false"
               style="text-align: left;"
               >
               {{ props.row.name }}
@@ -155,7 +154,6 @@
                 type="is-info is-text" inverted rounded 
                 tag="a" 
                 :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`" 
-                :download="props.row.type === 'content' ? props.row.name :  false"
                 style="text-align: left"
                 >
                 {{ props.row.name }}
