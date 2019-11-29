@@ -86,20 +86,16 @@
         >
         <template slot-scope="props">
           <b-table-column 
-            field="type" sortable
-            label="Type" 
-            centered width="24"
+            field="name"
+            label="Name"
+            sortable :custom-sort="sortTableData('name')"
             >
             <b-icon 
+              class="row-title-icon"
               pack="far" 
               :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
               >
             </b-icon>
-          </b-table-column>
-          <b-table-column 
-            field="name" sortable
-            label="Name"
-            >
             <b-button 
               type="is-info is-text" inverted rounded 
               tag="a" 
@@ -110,15 +106,17 @@
             </b-button>
           </b-table-column>
           <b-table-column
-            field="size" numeric sortable
+            field="size" numeric 
             label="Size"
+            sortable :custom-sort="sortTableData('size')"
             centered width="128"
             >
             {{ props.row.size | formatBytes}}
           </b-table-column>
           <b-table-column 
-              field="dateModified" sortable
+              field="dateModified" 
               label="Date Modified"
+              sortable :custom-sort="sortTableData('dateModified')"
               centered width="256"
               >
               <b-tooltip
@@ -143,7 +141,7 @@
             class="mobile-row"
             >
             <b-icon 
-              class="mobile-row-title-icon"
+              class="row-title-icon"
               pack="far" 
               :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
               >
@@ -174,22 +172,29 @@
                 :label="props.row.dateModified | formatDate"
                 class="mobile-date-tooltip"
                 >
-
                 {{ props.row.dateModified | formatDateRelative }}
-
               </b-tooltip>
-              
             </div>
           </b-table-column>
           
           <!-- dummy colums to make mobile rows sortable -->
-          <b-table-column v-show='false' field="type" sortable label="Type">
+          <b-table-column 
+            field="name"
+            label="Name"
+            sortable :custom-sort="sortTableData('name')"
+            >
           </b-table-column>
-          <b-table-column v-show='false' field="name" sortable label="Name">
+          <b-table-column v-show='false' 
+            field="size"
+            label="Size"
+            sortable :custom-sort="sortTableData('size')"
+            >
           </b-table-column>
-          <b-table-column v-show='false' field="size" sortable label="Size">
-          </b-table-column>
-          <b-table-column v-show='false' field="dateModified" sortable label="Date Modified">
+          <b-table-column v-show='false' 
+            field="dateModified" 
+            label="Date Modified"
+            sortable :custom-sort="sortTableData('dateModified')"
+            >
           </b-table-column>
         </template>
       </b-table>
@@ -324,6 +329,18 @@
             size: parseInt(tag.querySelector('Size').textContent),
             dateModified: new Date(tag.querySelector('LastModified').textContent)
           }));
+          
+          contents.push({
+            key: `${this.pathPrefix}foo`,
+            size: 1337,
+            dateModified: new Date()
+          })
+          contents.push({
+            key: `${this.pathPrefix}bar`,
+            size: 31337,
+            dateModified: new Date()
+          })
+          
 
           this.pathContentTableData = [];
           commonPrefixes
@@ -349,6 +366,29 @@
                 url: `${this.config.bucketUrl}/${content.key}`
               })
             });
+        },
+        sortTableData(columnName) {          
+          return (rowA, rowB, isAsc) => {
+            if(rowA.type != rowB.type){
+              return rowA.type === 'prefix' ? -1 :1
+            }
+            
+            const valueA = rowA[columnName];
+            const valueB = rowB[columnName];
+            if(valueA != valueB){
+              if(valueA === undefined){
+                return isAsc ? -1 :  1;
+              }
+              if(valueB === undefined){
+                return isAsc ?  1 : -1;
+              }
+              return isAsc 
+                ? (valueA < valueB ? -1 :  1) 
+                : (valueA < valueB ?  1 : -1);
+            }
+            
+            return 0;
+          };
         }
       },
       async mounted() {
@@ -431,15 +471,15 @@
       color: dimgray;
     }
     
+    .row-title-icon {
+      margin-right: 1rem;
+    }
+    
     .mobile-row {
       justify-content: flex-start !important;
     }
     .mobile-row::before {
       display: none !important;
-    }
-    
-    .mobile-row-title-icon {
-      margin-right: 1rem;
     }
     .mobile-row-title {
       display: flex;
