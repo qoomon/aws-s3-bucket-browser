@@ -329,18 +329,6 @@
             size: parseInt(tag.querySelector('Size').textContent),
             dateModified: new Date(tag.querySelector('LastModified').textContent)
           }));
-          
-          contents.push({
-            key: `${this.pathPrefix}foo`,
-            size: 1337,
-            dateModified: new Date()
-          })
-          contents.push({
-            key: `${this.pathPrefix}bar`,
-            size: 31337,
-            dateModified: new Date()
-          })
-          
 
           this.pathContentTableData = [];
           commonPrefixes
