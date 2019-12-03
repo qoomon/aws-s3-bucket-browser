@@ -8,13 +8,13 @@ S3 Bucket index.html to browse bucket content
 ## Instalation
 
 * Just <a download href="https://raw.githubusercontent.com/qoomon/aws-s3-bucket-browser/master/index.html">download</a> `index.html`  and put at root level of S3 bucket.
-* Adjust config within `index.html` if needed.
-  * `title` - string
-  * `subtitle` - string
-  * `logo` - location
-  * `favicon` - location
-  * `keyExcludePattern`  - regex
-  * `pageSize` - number
+  * Adjust config within `index.html` if needed.
+    * `title` - string
+    * `subtitle` - string
+    * `logo` - location
+    * `favicon` - location
+    * `keyExcludePattern`  - regex
+    * `pageSize` - number
 
 * Open `<S3_BUCKET_URL>/index.html` in your browser.
 
