@@ -23,3 +23,13 @@ S3 Bucket index.html to browse bucket content
 * Open hosted `index.html` and passing bucket parameter like this `<INDEX_FILE_LOCATION>?bucket=<S3_BUCKET_URL>` in your browser
   * **ensure CORS policy headers for S3 bucket**
 * e.g. [`https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org`](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)
+
+
+### CloudFront Setup
+If you use CloudFront in upfront of your s3 bucket ensure following CloudFront settings.
+- Allowed/Cached HTTP Methods: `GET`, `HEAD`, `OPTIONS`
+- Cached Based on Selected Headers: `Whitelist`
+  - `Access-Control-Request-Headers`
+  - `Access-Control-Request-Methods`
+  - `Origin`
+- Query String Forwarding and Caching: `Forward all`
