@@ -335,24 +335,33 @@
             .forEach(prefix => {
               this.pathContentTableData.push({
                 type: 'prefix',
-                name: prefix.prefix.replace(/^.*\/(?=.+)/, ''),
+                name: prefix.prefix.split('/').slice(-2)[0] + '/',
                 
                 prefix: prefix.prefix
-              })
+              });
             });
           contents
-            .filter(content => !content.key.endsWith('/')) // exclude folder entries
             .filter(content => !config.keyExcludePattern || !content.key.match(config.keyExcludePattern))
             .forEach(content => {
-              this.pathContentTableData.push({
-                type: 'content',
-                name: content.key.replace(/^.*\//, ''),
-                size: content.size,
-                dateModified: content.dateModified,
+              if(content.key.endsWith('/') && !content.size){
+                if(content.key !== this.pathPrefix)
+                this.pathContentTableData.push({
+                  type: 'prefix',
+                  name: content.key.split('/')[0] + '/',
+                  
+                  prefix: `${this.pathPrefix}${content.key}`
+                });
+              } else {
+                this.pathContentTableData.push({
+                  type: 'content',
+                  name: content.key.split('/').slice(-1)[0],
+                  size: content.size,
+                  dateModified: content.dateModified,
 
-                key: content.key,
-                url: `${this.config.bucketUrl}/${content.key}`
-              })
+                  key: content.key,
+                  url: `${this.config.bucketUrl}/${content.key}`
+                });
+              }
             });
         },
         sortTableData(columnName) {          
