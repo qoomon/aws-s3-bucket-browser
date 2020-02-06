@@ -5,7 +5,7 @@ S3 Bucket index.html to browse bucket content
 
 ## [Demo](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)
 
-## Instalation
+## Installation
 
 * Just <a download href="https://raw.githubusercontent.com/qoomon/aws-s3-bucket-browser/master/index.html">download</a> `index.html`  and put at root level of S3 bucket.
   * Adjust config within `index.html` if needed.
