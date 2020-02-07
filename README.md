@@ -1,7 +1,7 @@
 # AWS S3 Bucket Browser
 S3 Bucket index.html to browse bucket content
 
-![](favicon.ico)
+![-](favicon.ico)
 
 ## [Demo](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)
 
