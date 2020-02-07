@@ -26,7 +26,7 @@ S3 Bucket index.html to browse bucket content
 
 
 ### CloudFront Setup
-If you use CloudFront in upfront of your s3 bucket ensure following CloudFront settings.
+If you use CloudFront in upfront of your S3 bucket ensure following CloudFront settings.
 - Allowed/Cached HTTP Methods: `GET`, `HEAD`, `OPTIONS`
 - Cached Based on Selected Headers: `Whitelist`
   - `Access-Control-Request-Headers`
