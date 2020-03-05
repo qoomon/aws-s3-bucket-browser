@@ -227,11 +227,16 @@
   <script>
     
     if(!config.bucketUrl){
-      let searchParams = new URL(window.location).searchParams;
-      config.bucketUrl = searchParams.get('bucket') 
+      let location = new URL(window.location);
+      
+      config.bucketUrl =  
+        // try get bucket url by location hash
+        location.hash.replace(/^#/,'')
+        // try get bucket url by request parameter
+        || location.searchParams.get('bucket') 
         // assume this file is located ar root level of the bucket
         // e.g. https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
-        || window.location.href.split(/[?#]/)[0].replace(/\/[^\/]+$/, '')
+        || location.origin + location.pathname.replace(/\/[^\/]+\.html$/, '')
     }
   
   
