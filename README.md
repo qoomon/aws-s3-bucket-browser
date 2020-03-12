@@ -19,9 +19,9 @@ S3 Bucket index.html to browse bucket content
 * **Ensure following Bucket Permissions**
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
   * Grant public read permission by `Access Control List` or `Bucket Policy`
-    * `Access Control List` Configuration
+    * **Access Control List**
       * Enable `List objects` for `Everyone`
-    * `Bucket Policy` Configuration
+    * **Bucket Policy**
       ```json
       {
           "Version": "2012-10-17",
