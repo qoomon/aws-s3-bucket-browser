@@ -18,16 +18,38 @@ S3 Bucket index.html to browse bucket content
     * `pageSize` - number
 * **Ensure following Bucket Permissions**
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
-  * Configure `Access Control List` for `Everyone`
-   * Enable `List objects` 
-* Open `<S3_BUCKET_URL>/index.html` in your browser.
+  * Grant public read permission by `Access Control List` or `Bucket Policy`
+    * `Access Control List` Configuration
+      * Enable `List objects` for `Everyone`
+    * `Bucket Policy` Configuration
+      ```json
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Sid": "PublicRead",
+                  "Principal": "*",
+                  "Effect": "Allow",
+                  "Action": [
+                      "s3:ListBucket",
+                      "s3:GetObject"
+                  ],
+                  "Resource": [
+                      "arn:aws:s3:::<YOUR BUCKET NAME>",
+                      "arn:aws:s3:::<YOUR BUCKET NAME>/*"
+                  ]
+              }
+          ]
+      }
+      ```
+* Open `<YOUR BUCKET URL>/index.html` in your browser.
 
 #### Hosted
 * **Ensure following Bucket Permissions**
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
-  * Configure `Access Control List` for `Everyone`
-   * Enable `List objects` 
-  * Configure `CORS Configuration`
+  * Grant public read permission by `Access Control List` or `Bucket Policy`
+    * see [Self-Hosted](#self-hosted)
+  * Grant Cross Origin Access by `CORS Configuration`
     ```xml
     <!-- Sample policy -->
     <CORSConfiguration>
