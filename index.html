@@ -9,10 +9,15 @@
       // bucketUrl: https://s3.eu-central-1.amazonaws.com/example-bucket
 
       // List of objects prefix to be excluded
-      keyExcludePattern: [
+      keyExcludeList: [
         'index.html',
         // 'logo.png',
         // 'favicon.ico'
+      ],
+
+      // List of objects to be included in sub folders
+      keyIncludeInSubFolderList: [
+        // 'index.html',
       ],
       pageSize: 50,
       title: 'AWS S3 Bucket Browser',
@@ -349,8 +354,28 @@
                 prefix: prefix.prefix
               });
             });
+
           contents
-            .filter(content => !config.keyExcludePattern || !config.keyExcludePattern.includes(content.key.replace(this.pathPrefix, '')))
+            .filter( (content) => {
+
+              if (this.pathPrefix === '') {
+
+                if (!this.config.keyExcludeList || !this.config.keyExcludeList.includes(content.key)) {
+                  return content;
+                }
+
+              } else {
+
+                if (this.config.keyIncludeInSubFolderList.length && this.config.keyIncludeInSubFolderList.includes(content.key.replace(this.pathPrefix, ''))) {
+                  return content;
+                }
+
+                if (!this.config.keyExcludeList || !this.config.keyExcludeList.includes(content.key.replace(this.pathPrefix, ''))) {
+                  return content;
+                }
+
+              }
+          })
             .forEach(content => {
               if(content.key.endsWith('/') && !content.size){
                 if(content.key !== this.pathPrefix)
