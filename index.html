@@ -178,19 +178,19 @@
           </b-table-column>
           
           <!-- dummy colums to make mobile rows sortable -->
-          <b-table-column 
+          <b-table-column v-show='false'
             field="name"
             label="Name"
             sortable :custom-sort="sortTableData('name')"
             >
           </b-table-column>
-          <b-table-column v-show='false' 
+          <b-table-column v-show='false'
             field="size"
             label="Size"
             sortable :custom-sort="sortTableData('size')"
             >
           </b-table-column>
-          <b-table-column v-show='false' 
+          <b-table-column v-show='false'
             field="dateModified" 
             label="Date Modified"
             sortable :custom-sort="sortTableData('dateModified')"
