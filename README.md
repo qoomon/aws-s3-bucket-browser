@@ -14,7 +14,7 @@ S3 Bucket index.html to browse bucket content
     * `subtitle` - string
     * `logo` - location
     * `favicon` - location
-    * `keyExcludePattern`  - regex
+    * `keyExcludePatterns` - array of regex
     * `pageSize` - number
 * ⚠️ Ensure following Bucket Permissions
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
