@@ -7,7 +7,7 @@
       // bucketUrl defaults to this file location
       //   ensure it's on bucket root leve level (e.g. key: 'index.html')
       // bucketUrl: https://s3.eu-central-1.amazonaws.com/example-bucket
-      keyExcludePattern: /^index\.html$/,
+      keyExcludePatterns: [ /^index\.html$/ ],
       pageSize: 50,
       title: 'AWS S3 Bucket Browser',
       subtitle: 'made with ♥ by qoomon',
@@ -344,7 +344,7 @@
               });
             });
           contents
-            .filter(content => !config.keyExcludePattern || !content.key.match(config.keyExcludePattern))
+            .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key)))
             .forEach(content => {
               if(content.key.endsWith('/') && !content.size){
                 if(content.key !== this.pathPrefix)
