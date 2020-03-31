@@ -104,6 +104,15 @@
               >
               {{ props.row.name }}
             </b-button>
+            <b-button 
+              v-if="props.row.installUrl"
+              type="is-info" rounded 
+              tag="a" 
+              :href="props.row.installUrl"  
+              style="margin-left: 0.5rem; height: 1.7rem; padding: 12px;"
+              >
+              Install
+            </b-button>
           </b-table-column>
           <b-table-column
             field="size" numeric 
@@ -155,6 +164,15 @@
                 style="text-align: left"
                 >
                 {{ props.row.name }}
+              </b-button>
+              <b-button 
+                v-if="props.row.installUrl"
+                type="is-info" rounded 
+                tag="a" 
+                :href="props.row.installUrl"  
+                style="margin-left: 0.5rem; height: 1.7rem; padding: 12px;"
+                >
+                Install
               </b-button>
             </div>
             
@@ -354,7 +372,15 @@
                   
                   prefix: `${this.pathPrefix}${content.key}`
                 });
-              } else {
+              } else { 
+                let url = `${this.config.bucketUrl}/${content.key}`;
+                let installUrl;
+                
+                let isIOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if(isIOS && url.endsWith('/manifest.plist')){
+                  installUrl = `itms-services://?action=download-manifest&url=${url.replace(/\/[^/]*$/,'')}/manifest.plist`
+                }
+                
                 this.pathContentTableData.push({
                   type: 'content',
                   name: content.key.split('/').slice(-1)[0],
@@ -362,7 +388,8 @@
                   dateModified: content.dateModified,
 
                   key: content.key,
-                  url: `${this.config.bucketUrl}/${content.key}`
+                  url,
+                  installUrl
                 });
               }
             });
