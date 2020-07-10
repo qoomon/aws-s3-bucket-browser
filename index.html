@@ -280,7 +280,7 @@
         pathBreadcrumps() {
           return `/${this.pathPrefix}`.match(/(?=[/])|[^/]+[/]?/g)
             .map((pathPrefixPart, index, pathPrefixParts) => ({
-              name: pathPrefixPart,
+              name: decodeURI(pathPrefixPart),
               url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
             }));
         },
@@ -365,7 +365,7 @@
             .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key)))
             .forEach(content => {
               if(content.key.endsWith('/') && !content.size){
-                if(content.key !== this.pathPrefix)
+                if(content.key !== decodeURI(this.pathPrefix))
                 this.pathContentTableData.push({
                   type: 'prefix',
                   name: content.key.split('/')[0] + '/',
