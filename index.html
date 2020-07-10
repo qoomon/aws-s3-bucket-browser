@@ -353,6 +353,7 @@
 
           this.pathContentTableData = [];
           commonPrefixes
+            .filter(prefix => !config.keyExcludePatterns.find(pattern => pattern.test(prefix.prefix)))
             .forEach(prefix => {
               this.pathContentTableData.push({
                 type: 'prefix',
