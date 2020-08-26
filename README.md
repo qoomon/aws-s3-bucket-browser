@@ -1,5 +1,5 @@
 # AWS S3 Bucket Browser
-S3 Bucket index.html to browse bucket content
+Single HTML file to browse AWS S3 buckets
 
 ![-](favicon.ico)
 
