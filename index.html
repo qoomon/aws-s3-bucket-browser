@@ -9,7 +9,7 @@
       // bucketUrl: https://s3.eu-central-1.amazonaws.com/example-bucket
       keyExcludePatterns: [ /^index\.html$/ ],
       pageSize: 50,
-      title: 'AWS S3 Bucket Browser',
+      title: 'S3 Bucket Browser',
       subtitle: 'made with ♥ by qoomon',
       logo: 'logo.png',
       favicon: 'favicon.ico'
@@ -19,32 +19,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link id="favicon" rel="shortcut icon"/>
-  <script src="https://unpkg.com/vue@2.6.10"></script><script>Vue.config.productionTip = false;</script>
-  <script src="https://unpkg.com/buefy@0.8.6/dist/buefy.min.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/buefy@0.8.6/dist/buefy.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
-  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
-  <script src="https://unpkg.com/moment@2.14.1/min/moment.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+  <script src="https://unpkg.com/vue@2.6.12"></script><script>Vue.config.productionTip = false;</script>
+  <script src="https://unpkg.com/buefy@0.9.3/dist/buefy.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.3/dist/buefy.min.css">
+  <script src="https://unpkg.com/moment@2.27.0/min/moment.min.js"></script>
 </head>
 
 <body class="notification" style="width: 100vw; min-height: 100vh; overflow-y: auto;">
   
-  <div id="app">
+  <div id="app" v-cloak>
   
-    <div class="container">
-      <div class="level">
-        <div class="level-left">
-          <figure class="level-item image is-128x128" style="margin-right: 1.5rem;">
-            <img :src="config.logo"/>
-          </figure>
-          <div>
-            <h1 class="title">{{config.title}}</h1>
-            <h2 class="subtitle">{{config.subtitle}}</h2>
-          </div>
+    <!-- Header -->
+    <div class="level">
+      <div class="level-left" style="display: flex;">
+        <figure class="level-item image is-96x96" style="margin-right: 1.5rem;">
+          <img :src="config.logo"/>
+        </figure>
+        <div>
+          <h1 class="title">{{config.title}}</h1>
+          <h2 class="subtitle">{{config.subtitle}}</h2>
         </div>
       </div>
-      
+    </div>
+    
+    <div class="container">
+      <!-- Navigation Bar -->
       <div class="container is-clearfix">
+        <!-- Prefix Breadcrumps -->
         <div class="buttons is-pulled-left">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
             type="is-info" rounded
@@ -59,6 +62,7 @@
             <template v-else="index > 0">{{breadcrump.name}}</template>
           </b-button>
         </div>
+        <!-- Paginating Buttons -->
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
           <b-button
@@ -80,16 +84,19 @@
         </div>
       </div>
 
+      <!-- Content Table --> 
       <b-table 
-        v-if="!isMobileBreakoint"
         :data="pathContentTableData" 
+        :mobile-cards="true"
         >
-        <template slot-scope="props">
-          <b-table-column 
-            field="name"
-            label="Name"
-            sortable :custom-sort="sortTableData('name')"
-            >
+        <b-table-column 
+          v-slot="props"
+          field="name"
+          label="Name"
+          sortable :custom-sort="sortTableData('name')"
+          cell-class="name-column"
+          >
+          <div style="display: flex; align-items: center;">
             <b-icon 
               class="row-title-icon"
               pack="far" 
@@ -104,119 +111,64 @@
               >
               {{ props.row.name }}
             </b-button>
-            <b-button 
-              v-if="props.row.installUrl"
-              type="is-info" rounded 
-              tag="a" 
-              :href="props.row.installUrl"  
-              style="margin-left: 0.5rem; height: 1.7rem; padding: 12px;"
-              >
-              Install
-            </b-button>
-          </b-table-column>
-          <b-table-column
-            field="size" numeric 
-            label="Size"
-            sortable :custom-sort="sortTableData('size')"
-            centered width="128"
+          </div>
+          <b-button 
+            v-if="props.row.installUrl"
+            type="is-info" rounded 
+            tag="a" 
+            :href="props.row.installUrl"  
+            style="margin-left: 0.5rem; height: 1.7rem; padding: 12px;"
             >
-            {{ props.row.size | formatBytes}}
-          </b-table-column>
-          <b-table-column 
-              field="dateModified" 
-              label="Date Modified"
-              sortable :custom-sort="sortTableData('dateModified')"
-              centered width="256"
-              >
-              <b-tooltip
-                type="is-light"
-                size="is-small"
-                position="is-left"
-                animated
-                :label="props.row.dateModified | formatDate"
-                >
-                {{ props.row.dateModified | formatDateRelative }}
-              </b-tooltip>
-          </b-table-column>
-        </template>
-      </b-table>
-      
-      <b-table 
-        v-if="isMobileBreakoint"
-        :data="pathContentTableData"
-        >
-        <template slot-scope="props">
-          <b-table-column 
-            class="mobile-row"
-            >
-            <b-icon 
-              class="row-title-icon"
-              pack="far" 
-              :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
-              >
-            </b-icon>
-            
-            <div class="mobile-row-title">
-              <b-button 
-                type="is-info is-text" inverted rounded 
-                tag="a" 
-                :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`" 
-                style="text-align: left"
-                >
-                {{ props.row.name }}
-              </b-button>
-              <b-button 
-                v-if="props.row.installUrl"
-                type="is-info" rounded 
-                tag="a" 
-                :href="props.row.installUrl"  
-                style="margin-left: 0.5rem; height: 1.7rem; padding: 12px;"
-                >
-                Install
-              </b-button>
-            </div>
-            
-            <div 
-              v-if="props.row.size || props.row.dateModified"
-              class="mobile-row-subtitle"
-              >
-              <div>
-                {{ props.row.size | formatBytes}}
-              </div>
-              <b-tooltip
-                type="is-light"
-                position="is-left"
-                animated
-                :label="props.row.dateModified | formatDate"
-                class="mobile-date-tooltip"
-                >
-                {{ props.row.dateModified | formatDateRelative }}
-              </b-tooltip>
-            </div>
-          </b-table-column>
+            Install
+          </b-button>
           
-          <!-- dummy colums to make mobile rows sortable -->
-          <b-table-column v-show='false'
-            field="name"
-            label="Name"
-            sortable :custom-sort="sortTableData('name')"
+          <div 
+            v-if="cardView && (props.row.size || props.row.dateModified)"
+            class="name-column-details"
             >
-          </b-table-column>
-          <b-table-column v-show='false'
-            field="size"
-            label="Size"
-            sortable :custom-sort="sortTableData('size')"
+            <b-tooltip
+              type="is-light"
+              position="is-left"
+              animated
+              :label="props.row.dateModified | formatDate"
+              >
+              <div>{{ props.row.size | formatBytes}}</div>
+              <div>{{ props.row.dateModified | formatDateRelative }}</div>
+            </b-tooltip>
+          </div>
+
+        </b-table-column>
+        <b-table-column
+          v-slot="props"
+          field="size" numeric 
+          label="Size"
+          sortable :custom-sort="sortTableData('size')"
+          centered width="128"
+          cell-class="size-column"
+          >
+          {{ props.row.size | formatBytes}}
+        </b-table-column>
+        <b-table-column 
+          v-slot="props"
+          field="dateModified" 
+          label="Date Modified"
+          sortable :custom-sort="sortTableData('dateModified')"
+          centered width="256"
+          cell-class="modified-column"
+          >
+          <b-tooltip
+            type="is-light"
+            size="is-small"
+            position="is-left"
+            animated
+            :label="props.row.dateModified | formatDate"
             >
-          </b-table-column>
-          <b-table-column v-show='false'
-            field="dateModified" 
-            label="Date Modified"
-            sortable :custom-sort="sortTableData('dateModified')"
-            >
-          </b-table-column>
-        </template>
+            {{ props.row.dateModified | formatDateRelative }}
+          </b-tooltip>
+        </b-table-column>
       </b-table>
       
+      <!-- Paginating Buttons -->  
       <div class="container is-clearfix" style="margin-top: 1rem;">
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
@@ -239,6 +191,8 @@
         </div>
       </div>
     </div>
+    
+    <!-- Footer --> 
     <div class="footer-bucket-url">Bucket: {{ config.bucketUrl }}</div>    
   </div>
   
@@ -284,7 +238,7 @@
               url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
             }));
         },
-        isMobileBreakoint(){
+        cardView(){
           return this.windowWidth <= 768
         }
       },
@@ -366,17 +320,19 @@
             .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key)))
             .forEach(content => {
               if(content.key.endsWith('/') && !content.size){
-                if(content.key !== decodeURI(this.pathPrefix))
-                this.pathContentTableData.push({
-                  type: 'prefix',
-                  name: content.key.split('/')[0] + '/',
-                  
-                  prefix: `${this.pathPrefix}${content.key}`
-                });
+                if(content.key !== decodeURI(this.pathPrefix)) {
+                  this.pathContentTableData.push({
+                    type: 'prefix',
+                    name: content.key.split('/')[0] + '/',
+                    
+                    prefix: `${this.pathPrefix}${content.key}`
+                  });
+                }
               } else { 
                 let url = `${this.config.bucketUrl}/${content.key}`;
                 let installUrl;
                 
+                // generate manifest.plist install urls
                 let isIOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
                 if(isIOS && url.endsWith('/manifest.plist')){
                   installUrl = `itms-services://?action=download-manifest&url=${url.replace(/\/[^/]*$/,'')}/manifest.plist`
@@ -397,6 +353,7 @@
         },
         sortTableData(columnName) {          
           return (rowA, rowB, isAsc) => {
+            // prefixes always first
             if(rowA.type != rowB.type){
               return rowA.type === 'prefix' ? -1 :1
             }
@@ -426,7 +383,6 @@
         };
         window.onhashchange();
 
-        
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth;
         });
@@ -468,6 +424,8 @@
       }
     });
     
+    document.getElementById("app").style.display="";
+    
     function escapeHTML(unsafeText) {
         let div = document.createElement('div');
         div.innerText = unsafeText;
@@ -476,11 +434,12 @@
   </script>
   
   <style>
-    .table {
-      background-color: transparent;
-    }
-    .table > tbody > tr {
-      background-color: #fff !important;
+    [v-cloak] {display: none}
+    
+    .button.is-primary {
+      background-color: #167df0 !important;
+      border-color: transparent !important;
+      color: #fff !important;
     }
     .button.is-text {
       height: auto !important;
@@ -493,38 +452,30 @@
       padding: 0 !important;
     }
     
+    .table {
+      background-color: transparent;
+    }
+    .table > tbody > tr {
+      background-color: #fff !important;
+    }
     .table td {
       vertical-align: middle !important;
       align-items: center;
       color: dimgray;
     }
-    
     .row-title-icon {
       margin-right: 1rem;
     }
-    
-    .mobile-row {
-      justify-content: flex-start !important;
-    }
-    .mobile-row::before {
-      display: none !important;
-    }
-    .mobile-row-title {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-    }
-    .mobile-row-subtitle {
-      flex: 1;
+
+    .name-column-details {
+      flex: auto;
       height: 3rem;
       flex-basis: 6rem;
       flex-shrink: 0;
       font-size: 0.85rem;
       line-height: 1.5rem;
     }
-    .mobile-date-tooltip::after {
-      padding: .25rem .55rem;
-    }
+    
     .footer-bucket-url {
       position: absolute;
       bottom: 0;
@@ -535,6 +486,16 @@
       text-align: center;
       color: darkgray;
     }
+    
+    @media screen and (max-width: 768px) {
+      .name-column::before {
+        display: none !important;
+      }
+      .size-column, .modified-column {
+          display: none !important;
+      }
+    }
+    
   </style>
   
   <a href="https://github.com/qoomon/aws-s3-bucket-browser" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
