@@ -49,16 +49,26 @@ Single HTML file to browse AWS S3 buckets
   * Grant public read permission by `Access Control List` or `Bucket Policy`
     * see [Self-Hosted](#self-hosted)
   * Grant Cross Origin Access by `CORS Configuration`
-    ```xml
-    <!-- Sample policy -->
-    <CORSConfiguration>
-     <CORSRule>
-      <AllowedOrigin>*</AllowedOrigin>
-      <AllowedMethod>GET</AllowedMethod>
-      <MaxAgeSeconds>3000</MaxAgeSeconds>
-      <AllowedHeader>Authorization</AllowedHeader>
-     </CORSRule>
-    </CORSConfiguration>
+    ```json
+    [
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET"
+        ],
+        "AllowedOrigins": [
+            "http://www.example.com"
+        ],
+        "ExposeHeaders": [
+            "x-amz-server-side-encryption",
+            "x-amz-request-id",
+            "x-amz-id-2"
+        ],
+        "MaxAgeSeconds": 3000
+    }
+    ]
     ```
 * Open hosted `index.html` in your browser and passing bucket parameter
   * `<INDEX_FILE_LOCATION>?bucket=<S3_BUCKET_URL>` 
