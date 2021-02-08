@@ -275,7 +275,7 @@
           let listBucketResult
           try {
             if(!config.bucketUrl){
-              throw Error("No bucket url set!\nProvide bucket url 'bucket' request parameter.")
+              throw Error("Bucket url is undefined!")
             }
             
             let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`
