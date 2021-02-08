@@ -71,8 +71,8 @@ Single HTML file to browse AWS S3 buckets
     }
     ]
     ```
-* Open hosted `index.html` in your browser and passing bucket parameter
-  * `<INDEX_FILE_LOCATION>?bucket=<S3_BUCKET_URL>` 
+* Open hosted `index.html` in your browser and provide bucket url as `bucket` request parameter
+  * `${INDEX_FILE_LOCATION}?bucket=${S3_BUCKET_URL}` 
   * e.g. [`https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org`](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)
 
 
