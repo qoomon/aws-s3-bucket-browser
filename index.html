@@ -4,8 +4,10 @@
 <head>
   <script>
     const config = {
-      // The bucket url defaults to this file location, ensure it's on bucket root level e.g. key: 'index.html' or `browser.html`
-      // bucketUrl: https://s3.eu-central-1.amazonaws.com/example-bucket
+      // if bucketUrl is undefined, script tries to get bucket url from this file location itself.
+      //   only works if this file url is an s3 bucket url.
+      //     e.g https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
+      bucketUrl: undefined, // e.g https://s3.eu-central-1.amazonaws.com/example-bucket/
       keyExcludePatterns: [ /^index\.html$/ ],
       pageSize: 50,
       title: 'S3 Bucket Browser',
@@ -203,17 +205,17 @@
   <script>
     
     if(!config.bucketUrl){
-      let location = new URL(window.location)
-      
-      config.bucketUrl =  
-        // try get bucket url by request parameter
-        location.searchParams.get('bucket') 
-        // assume this file is located ar root level of the bucket
-        // e.g. https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
-        || location.origin + location.pathname.replace(/\/[^\/]+\.html$/, '')
+      // try get bucket url by request parameter
+      config.bucketUrl = new URL(window.location).searchParams.get('bucket')   
     }
-  
-  
+    if(!config.bucketUrl){
+      // try get bucket url from file location itself, if location hostname is a s3 host
+      // e.g. https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
+      if(window.location.hostname.match(/s3\.[^.]+\.amazonaws\.com/)){
+        config.bucketUrl =  window.location.origin + '/' + window.location.pathname.split('/')[1]
+      }
+    }
+    
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
 
@@ -272,6 +274,10 @@
         async refresh() {
           let listBucketResult
           try {
+            if(!config.bucketUrl){
+              throw Error("No bucket url set!\nProvide bucket url 'bucket' request parameter.")
+            }
+            
             let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`
             bucketListApiUrl += `&delimiter=/`
             bucketListApiUrl += `&prefix=${this.pathPrefix}`
