@@ -200,7 +200,7 @@
     </div>
     
     <!-- Footer --> 
-    <div class="footer-bucket-url">Bucket: {{ config.bucketUrl }}</div>
+    <div class="footer-bucket-url"><a :href="config.bucketUrl">Bucket: {{ config.bucketUrl }}</a></div>
   </div>
   <!-- GitHub Corner -->
   <a href="https://github.com/qoomon/aws-s3-bucket-browser" class="github-corner" aria-label="View source on GitHub">
@@ -234,10 +234,12 @@
         match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com/)
       }
       
+      console.log(config.bucketUrl)
       if(match){
         let groups = match.groups
         config.bucketUrl = `${groups.protocol}://s3.${groups.region}.amazonaws.com/${groups.name}`
       }
+      console.log(config.bucketUrl)
     }
     
     document.title = config.title
@@ -509,6 +511,9 @@
       font-size: small;
       text-align: center;
       color: darkgray;
+    }
+    .footer-bucket-url a {
+      color: inherit;
     }
     
     @media screen and (max-width: 768px) {
