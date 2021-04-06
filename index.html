@@ -5,14 +5,14 @@
   <script>
     const config = {
       bucketUrl: undefined, 
-      // If defined, ensure this is the bucket Rest API URL.
-      //   e.g https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
-      //   The URL should retrun an XML document with <ListBucketResult> as root element.
       // If undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
       //   * https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
       //   * http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
       //   * http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
+      // If manually defined, ensure this is the bucket Rest API URL.
+      //   e.g https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
+      //   The URL should retrun an XML document with <ListBucketResult> as root element.
       
       keyExcludePatterns: [ /^index\.html$/ ],
       pageSize: 50,
