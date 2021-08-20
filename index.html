@@ -218,29 +218,25 @@
       config.bucketUrl = window.location.href
     }
     
-    if(config.bucketUrl){
-      // try adjusting bucket url to bucket rest api endpoint
-      let match 
-      if(!match){
-        // check for urls like https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/s3\.(?<region>[^.]+)\.amazonaws.com\/(?<name>[^/]+)/)
-      }
-      if(!match){
-        // check for urls like http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com/)
-      }
-      if(!match){
-        // check for urls like http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com/)
-      }
-      
-      console.log(config.bucketUrl)
-      if(match){
-        let groups = match.groups
-        config.bucketUrl = `${groups.protocol}://s3.${groups.region}.amazonaws.com/${groups.name}`
-      }
-      console.log(config.bucketUrl)
+    // try adjusting bucket url to bucket rest api endpoint
+    let match 
+    if(!match){
+      // check for urls like https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/s3\.(?<region>[^.]+)\.amazonaws.com\/(?<name>[^/]+)/)
     }
+    if(!match){
+      // check for urls like http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com/)
+    }
+    if(!match){
+      // check for urls like http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com/)
+    }
+    if(match){
+      config.bucketUrl = `${match.groups.protocol}://s3.${match.groups.region}.amazonaws.com/${match.groups.name}`
+    }
+      
+    console.log("S3 Bucket REST API: " + config.bucketUrl)
     
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
