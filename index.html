@@ -11,10 +11,8 @@
       //   * http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
       //   * http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
       // If manually defined, ensure this is the bucket Rest API URL.
-      //   e.g https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
+      //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
       //   The URL should retrun an XML document with <ListBucketResult> as root element.
-      //   Make sure to ensure the URL is in quotes. 
-      //   e.g. bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME",
       
       keyExcludePatterns: [ /^index\.html$/ ],
       pageSize: 50,
