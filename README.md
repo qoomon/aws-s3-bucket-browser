@@ -10,6 +10,7 @@ Single HTML file to browse AWS S3 buckets
 * Just <a download href="https://raw.githubusercontent.com/qoomon/aws-s3-bucket-browser/master/index.html">download</a> `index.html` and put at root level of S3 bucket.
   * Adjust [config](index.html#L6-L23) within `index.html` if needed.
     * `bucketUrl` - string
+    * `rootPrefix` - string
     * `title` - string
     * `subtitle` - string
     * `logo` - location

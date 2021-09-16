@@ -5,15 +5,15 @@
   <script>
     const config = {
       bucketUrl: undefined, 
-      // If undefined, this script tries to determine bucket Rest API URL from this file location itself.
+      // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
       //   * https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
       //   * http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
       //   * http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
-      // If manually defined, ensure this is the bucket Rest API URL.
+      // If bucketUrl is set manually, ensure this is the bucket Rest API URL.
       //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
       //   The URL should retrun an XML document with <ListBucketResult> as root element.
-      
+      rootPrefix: 'datasets', // e.g. 'subfolder/'
       keyExcludePatterns: [ /^index\.html$/ ],
       pageSize: 50,
       title: 'S3 Bucket Browser',
@@ -200,7 +200,9 @@
     </div>
     
     <!-- Footer --> 
-    <div class="footer-bucket-url"><a :href="config.bucketUrl">Bucket: {{ config.bucketUrl }}</a></div>
+    <div class="footer-bucket-url">
+      <a :href="config.bucketUrl + ( config.rootPrefix ? `?prefix=${config.rootPrefix}`: '')">Bucket: {{ config.bucketUrl }}</a>
+    </div>
   </div>
   <!-- GitHub Corner -->
   <a href="https://github.com/qoomon/aws-s3-bucket-browser" class="github-corner" aria-label="View source on GitHub">
@@ -209,6 +211,7 @@
   </a>
   
   <script>
+    RegExp.escape = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
     
     if(!config.bucketUrl){
       // try get bucket url by request parameter
@@ -235,8 +238,15 @@
     if(match){
       config.bucketUrl = `${match.groups.protocol}://s3.${match.groups.region}.amazonaws.com/${match.groups.name}`
     }
-      
+    
     console.log("S3 Bucket REST API: " + config.bucketUrl)
+    
+    if(config.rootPrefix){
+      if (!config.rootPrefix.endsWith('/')){
+        config.rootPrefix += '/'
+      }
+      console.log("S3 Bucket Root Prefix: " + config.rootPrefix)
+    }
     
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
@@ -300,12 +310,13 @@
               throw Error("Bucket url is undefined!")
             }
             
-            let bucketListApiUrl = `${this.config.bucketUrl}?list-type=2`
+            let bucketListApiUrl = `${config.bucketUrl}?list-type=2`
             bucketListApiUrl += `&delimiter=/`
-            bucketListApiUrl += `&prefix=${this.pathPrefix}`
+            let bucketPrefix = `${config.rootPrefix}${this.pathPrefix}`
+            bucketListApiUrl += `&prefix=${bucketPrefix}`
             
-            if(this.config.pageSize){
-              bucketListApiUrl += `&max-keys=${this.config.pageSize}`
+            if(config.pageSize){
+              bucketListApiUrl += `&max-keys=${config.pageSize}`
             }
             if(this.continuationToken){
               bucketListApiUrl += `&continuation-token=${encodeURIComponent(this.continuationToken)}`
@@ -329,7 +340,7 @@
           let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
           this.nextContinuationToken =  nextContinuationTokenTag && nextContinuationTokenTag.textContent
           let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")].map(tag => ({
-            prefix: tag.querySelector('Prefix').textContent
+            prefix: tag.querySelector('Prefix').textContent.replace(RegExp(`^${RegExp.escape(config.rootPrefix)}`),'')
           }))
           let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")].map(tag => ({
             key: tag.querySelector('Key').textContent,
@@ -361,7 +372,7 @@
                   })
                 }
               } else { 
-                let url = `${this.config.bucketUrl}/${content.key}`
+                let url = `${config.bucketUrl}/${content.key}`
                 let installUrl
                 
                 // generate manifest.plist install urls
