@@ -4,7 +4,7 @@
 <head>
   <script>
     const config = {
-      bucketUrl: undefined, 
+      bucketUrl: undefined,
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
       //   * https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
@@ -13,8 +13,8 @@
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL.
       //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
       //   The URL should retrun an XML document with <ListBucketResult> as root element.
-      rootPrefix: 'datasets', // e.g. 'subfolder/'
-      keyExcludePatterns: [ /^index\.html$/ ],
+      rootPrefix: '', // e.g. 'subfolder/'
+      keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
       title: 'S3 Bucket Browser',
       subtitle: 'made with ♥ by qoomon',
@@ -22,10 +22,10 @@
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico'
     }
   </script>
-  
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link id="favicon" rel="shortcut icon"/>
+  <link id="favicon" rel="shortcut icon" />
   <script src="https://unpkg.com/vue@2.6.12" integrity="sha384-ma9ivURrHX5VOB4tNq+UiGNkJoANH4EAJmhxd1mmDq0gKOv88wkKZOfRDOpXynwh" crossorigin="anonymous"></script>
   <script>Vue.config.productionTip = false;</script>
   <style>[v-cloak] {display: none}</style> 
@@ -42,7 +42,7 @@
     <div class="level">
       <div class="level-left" style="display: flex;">
         <figure class="level-item image is-96x96" style="margin-right: 1.5rem;">
-          <img :src="config.logo"/>
+          <img :src="config.logo" />
         </figure>
         <div>
           <h1 class="title">{{config.title}}</h1>
@@ -50,7 +50,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="container">
       <!-- Navigation Bar -->
       <div class="container is-clearfix">
@@ -201,7 +201,7 @@
     
     <!-- Footer --> 
     <div class="footer-bucket-url">
-      <a :href="config.bucketUrl + ( config.rootPrefix ? `?prefix=${config.rootPrefix}`: '')">Bucket: {{ config.bucketUrl }}</a>
+      <a :href="`${config.bucketUrl}?prefix=${config.rootPrefix}${pathPrefix}`">Bucket: {{ config.bucketUrl }}</a>
     </div>
   </div>
   <!-- GitHub Corner -->
@@ -209,64 +209,83 @@
     <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
     <style scopped>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
   </a>
-  
+
   <script>
-    RegExp.escape = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
-    
-    if(!config.bucketUrl){
-      // try get bucket url by request parameter
-      config.bucketUrl = new URL(window.location).searchParams.get('bucket')   
+    function escapeRegExp(text) {
+      // $& means the whole matched string 
+      return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     }
-    if(!config.bucketUrl){
+
+    function escapeHTML(text) {
+      let div = document.createElement('div')
+      div.innerText = text
+      return div.innerHTML
+    }
+
+    function devicePlatform_iOS() {
+      return /iPad|iPhone|iPod/.test(navigator.platform) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    }
+  </script>
+
+
+  <!-- Main Script -->
+
+  <script>
+    if (!config.bucketUrl) {
+      // try get bucket url by request parameter
+      config.bucketUrl = new URL(window.location).searchParams.get('bucket')
+    }
+    if (!config.bucketUrl) {
       config.bucketUrl = window.location.href
     }
-    
+
     // try adjusting bucket url to bucket rest api endpoint
-    let match 
-    if(!match){
+    let match
+    if (!match) {
       // check for urls like https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/s3\.(?<region>[^.]+)\.amazonaws.com\/(?<name>[^/]+)/)
     }
-    if(!match){
+    if (!match) {
       // check for urls like http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com/)
     }
-    if(!match){
+    if (!match) {
       // check for urls like http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com/)
     }
-    if(match){
+    if (match) {
       config.bucketUrl = `${match.groups.protocol}://s3.${match.groups.region}.amazonaws.com/${match.groups.name}`
     }
-    
+
     console.log("S3 Bucket REST API: " + config.bucketUrl)
-    
-    if(config.rootPrefix){
-      if (!config.rootPrefix.endsWith('/')){
+
+    if (config.rootPrefix) {
+      if (!config.rootPrefix.endsWith('/')) {
         config.rootPrefix += '/'
       }
       console.log("S3 Bucket Root Prefix: " + config.rootPrefix)
     }
-    
+
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
 
     Vue.use(Buefy.default, {
-    	defaultIconPack: 'fa'
+      defaultIconPack: 'fa'
     })
-    
+
     new Vue({
       el: '#app',
       data: {
-        windowWidth: window.innerWidth,
         config, // defined in <head> section
-        pathPrefix: null,
-        
+        pathPrefix: '',
         pathContentTableData: [],
-        
+
         previousContinuationTokens: [],
         continuationToken: undefined,
-        nextContinuationToken: undefined
+        nextContinuationToken: undefined,
+
+        windowWidth: window.innerWidth
       },
       computed: {
         pathBreadcrumps() {
@@ -276,7 +295,7 @@
               url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
             }))
         },
-        cardView(){
+        cardView() {
           return this.windowWidth <= 768
         }
       },
@@ -289,64 +308,69 @@
         }
       },
       methods: {
-        moment: moment,
-        previousPage(){
-          if(this.previousContinuationTokens.length > 0){
+        moment,
+        previousPage() {
+          if (this.previousContinuationTokens.length > 0) {
             this.continuationToken = this.previousContinuationTokens.pop()
             this.refresh()
           }
         },
-        nextPage(){
-          if(this.nextContinuationToken){
+        nextPage() {
+          if (this.nextContinuationToken) {
             this.previousContinuationTokens.push(this.continuationToken)
             this.continuationToken = this.nextContinuationToken
             this.refresh()
           }
         },
         async refresh() {
+          this.pathPrefix = window.location.hash.replace(/^#\/?/, '')
+
           let listBucketResult
           try {
-            if(!config.bucketUrl){
+            if (!config.bucketUrl) {
               throw Error("Bucket url is undefined!")
             }
-            
+
             let bucketListApiUrl = `${config.bucketUrl}?list-type=2`
             bucketListApiUrl += `&delimiter=/`
             let bucketPrefix = `${config.rootPrefix}${this.pathPrefix}`
             bucketListApiUrl += `&prefix=${bucketPrefix}`
-            
-            if(config.pageSize){
+
+            if (config.pageSize) {
               bucketListApiUrl += `&max-keys=${config.pageSize}`
             }
-            if(this.continuationToken){
+            if (this.continuationToken) {
               bucketListApiUrl += `&continuation-token=${encodeURIComponent(this.continuationToken)}`
             }
             let listBucketResultResponse = await fetch(bucketListApiUrl)
             let listBucketResultXml = await listBucketResultResponse.text()
-            
+
             listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml")
-            if (!listBucketResult.querySelector('ListBucketResult')){
+            if (!listBucketResult.querySelector('ListBucketResult')) {
               throw Error("List bucket response does not contain <ListBucketResult> tag!")
             }
           } catch (error) {
             this.$buefy.notification.open({
-                    message: escapeHTML(error.message),
-                    type: 'is-danger',
-                    duration: 60000,
-                    position: 'is-bottom'
-                })
+              message: escapeHTML(error.message),
+              type: 'is-danger',
+              duration: 60000,
+              position: 'is-bottom'
+            })
             throw error
           }
           let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
-          this.nextContinuationToken =  nextContinuationTokenTag && nextContinuationTokenTag.textContent
-          let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")].map(tag => ({
-            prefix: tag.querySelector('Prefix').textContent.replace(RegExp(`^${RegExp.escape(config.rootPrefix)}`),'')
-          }))
-          let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")].map(tag => ({
-            key: tag.querySelector('Key').textContent,
-            size: parseInt(tag.querySelector('Size').textContent),
-            dateModified: new Date(tag.querySelector('LastModified').textContent)
-          }))
+          this.nextContinuationToken = nextContinuationTokenTag && nextContinuationTokenTag.textContent
+          let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")]
+            .map(tag => ({
+              prefix: tag.querySelector('Prefix').textContent
+                .replace(RegExp(`^${escapeRegExp(config.rootPrefix)}`), '')
+            }))
+          let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")]
+            .map(tag => ({
+              key: tag.querySelector('Key').textContent,
+              size: parseInt(tag.querySelector('Size').textContent),
+              dateModified: new Date(tag.querySelector('LastModified').textContent)
+            }))
 
           this.pathContentTableData = []
           commonPrefixes
@@ -355,32 +379,31 @@
               this.pathContentTableData.push({
                 type: 'prefix',
                 name: prefix.prefix.split('/').slice(-2)[0] + '/',
-                
+
                 prefix: prefix.prefix
               })
             })
           contents
             .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key)))
             .forEach(content => {
-              if(content.key.endsWith('/') && !content.size){
-                if(content.key !== decodeURI(this.pathPrefix)) {
+              if (content.key.endsWith('/') && !content.size) {
+                if (content.key !== decodeURI(this.pathPrefix)) {
                   this.pathContentTableData.push({
                     type: 'prefix',
                     name: content.key.split('/')[0] + '/',
-                    
+
                     prefix: `${this.pathPrefix}${content.key}`
                   })
                 }
-              } else { 
+              } else {
                 let url = `${config.bucketUrl}/${content.key}`
                 let installUrl
-                
-                // generate manifest.plist install urls
-                let isIOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-                if(isIOS && url.endsWith('/manifest.plist')){
+
+                if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
+                  // generate manifest.plist install urls
                   installUrl = `itms-services://?action=download-manifest&url=${url.replace(/\/[^/]*$/,'')}/manifest.plist`
                 }
-                
+
                 this.pathContentTableData.push({
                   type: 'content',
                   name: content.key.split('/').slice(-1)[0],
@@ -394,87 +417,78 @@
               }
             })
         },
-        sortTableData(columnName) {          
+        sortTableData(columnName) {
           return (rowA, rowB, isAsc) => {
             // prefixes always first
-            if(rowA.type != rowB.type){
-              return rowA.type === 'prefix' ? -1 :1
+            if (rowA.type != rowB.type) {
+              return rowA.type === 'prefix' ? -1 : 1
             }
-            
+
             const valueA = rowA[columnName]
             const valueB = rowB[columnName]
-            if(valueA != valueB){
-              if(valueA === undefined){
-                return isAsc ? -1 :  1
+            if (valueA != valueB) {
+              if (valueA === undefined) {
+                return isAsc ? -1 : 1
               }
-              if(valueB === undefined){
-                return isAsc ?  1 : -1
+              if (valueB === undefined) {
+                return isAsc ? 1 : -1
               }
-              return isAsc 
-                ? (valueA < valueB ? -1 :  1) 
-                : (valueA < valueB ?  1 : -1)
+              return isAsc ?
+                (valueA < valueB ? -1 : 1) :
+                (valueA < valueB ? 1 : -1)
             }
-            
+
             return 0
           }
         }
       },
       async mounted() {
-        window.onhashchange = () => {
-          let locationHash = window.location.hash.replace(/^#/, '')
-          this.pathPrefix = locationHash.replace(/^\//, '')
-        }
-        window.onhashchange()
-
+        window.onpopstate = () => this.refresh()
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth
         })
+
+        this.refresh()
       },
       async beforeDestroy() {
         window.removeEventListener('resize')
       },
       filters: {
         formatBytes(size) {
-          if(!size){
+          if (!size) {
             return '-'
           }
           const KB = 1024
           if (size < KB) {
-              return size + '  B'
+            return size + '  B'
           }
           const MB = 1000000
           if (size < MB) {
-              return (size / KB).toFixed(0) + ' KB'
-          } 
+            return (size / KB).toFixed(0) + ' KB'
+          }
           const GB = 1000000000
           if (size < GB) {
-              return (size / MB).toFixed(2) + ' MB'
+            return (size / MB).toFixed(2) + ' MB'
           }
           return (size / GB).toFixed(2) + ' GB'
         },
         formatDate(date) {
-          if(!date){
+          if (!date) {
             return '-'
           }
           return moment(date).format('dddd, MMMM Do, YYYY • hh:mm:ss')
         },
         formatDateRelative(date) {
-          if(!date){
+          if (!date) {
             return '-'
           }
           return moment(date).fromNow()
         }
       }
     })
-    
-    function escapeHTML(unsafeText) {
-        let div = document.createElement('div')
-        div.innerText = unsafeText
-        return div.innerHTML
-    }
   </script>
-  
-  <style scoped> 
+
+  <style scoped>
     body {
       width: 100vw;
       min-height: 100vh;
@@ -483,12 +497,13 @@
       background-color: #f5f5f5;
       overflow-y: auto;
     }
-    
+
     .button.is-primary {
       background-color: #167df0 !important;
       border-color: transparent !important;
       color: #fff !important;
     }
+
     .button.is-text {
       height: auto !important;
       user-select: text !important;
@@ -508,7 +523,7 @@
       font-size: 0.85rem;
       line-height: 1.5rem;
     }
-    
+
     .footer-bucket-url {
       position: absolute;
       bottom: 0;
@@ -519,16 +534,19 @@
       text-align: center;
       color: darkgray;
     }
+
     .footer-bucket-url a {
       color: inherit;
     }
-    
+
     @media screen and (max-width: 768px) {
       .name-column::before {
         display: none !important;
       }
-      .size-column, .modified-column {
-          display: none !important;
+
+      .size-column,
+      .modified-column {
+        display: none !important;
       }
     }
   </style>
