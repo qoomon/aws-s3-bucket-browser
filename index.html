@@ -18,6 +18,7 @@
       rootPrefix: '', // e.g. 'subfolder/'
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
+      defaultOrder: 'name-asc', // columns: name, size, dateModified; direction: asc, desc
       title: 'S3 Bucket Browser',
       subtitle: 'made with ♥ by qoomon',
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
@@ -28,14 +29,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link id="favicon" rel="shortcut icon" />
-  <script src="https://unpkg.com/vue@2.6.12" integrity="sha384-ma9ivURrHX5VOB4tNq+UiGNkJoANH4EAJmhxd1mmDq0gKOv88wkKZOfRDOpXynwh" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/vue@2.6.14" integrity="sha384-ma9ivURrHX5VOB4tNq+UiGNkJoANH4EAJmhxd1mmDq0gKOv88wkKZOfRDOpXynwh" crossorigin="anonymous"></script>
   <script>Vue.config.productionTip = false;</script>
   <style>[v-cloak] {display: none}</style> 
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css" integrity="sha384-rJzKgf2UUnpzXvYOutlTiL8YYlEwrfhBmJI+ymqTQ67Dw3qJJeHA76pmK2IaTjuD" crossorigin="anonymous">
-  <script src="https://unpkg.com/buefy@0.9.3/dist/buefy.min.js" integrity="sha384-rPHzRZJnjDOvMQpK5eUQpcVx/Uu7jxwv4YSX01zyfwo4kmiXkEo9g6MxOLNR5Ln+" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.3/dist/buefy.min.css" integrity="sha384-BAzcawHrZDaU3nLlhpTWsapC6cAeCn8bZnDxp4wvNC29UM4uMLMYTMSsDz3xCgg3" crossorigin="anonymous">
-  <script src="https://unpkg.com/moment@2.27.0/min/moment.min.js" integrity="sha384-2B/wBCdjAUU/YBoPNyeMGxfXWhtxcQaDnAg02ilzQ6Y2Zqq9XalRKILiKDNj75ow" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/buefy@0.9.10/dist/buefy.min.js" integrity="sha384-rPHzRZJnjDOvMQpK5eUQpcVx/Uu7jxwv4YSX01zyfwo4kmiXkEo9g6MxOLNR5Ln+" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.10/dist/buefy.min.css" integrity="sha384-BAzcawHrZDaU3nLlhpTWsapC6cAeCn8bZnDxp4wvNC29UM4uMLMYTMSsDz3xCgg3" crossorigin="anonymous">
+  <script src="https://unpkg.com/moment@2.29.1/min/moment.min.js" integrity="sha384-2B/wBCdjAUU/YBoPNyeMGxfXWhtxcQaDnAg02ilzQ6Y2Zqq9XalRKILiKDNj75ow" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -95,7 +96,9 @@
 
       <!-- Content Table --> 
       <b-table 
-        :data="pathContentTableData" 
+        :data="pathContentTableData"
+        :default-sort="config.defaultOrder.split('-')[0]"
+        :default-sort-direction="config.defaultOrder.split('-')[1]"
         :mobile-cards="true"
         >
         <b-table-column 
