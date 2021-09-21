@@ -6,6 +6,11 @@
 <head>
   <script>
     const config = {
+      title: 'S3 Bucket Browser',
+      subtitle: 'made with ♥ by qoomon',
+      logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
+      favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
+      
       bucketUrl: undefined,
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
@@ -18,11 +23,8 @@
       rootPrefix: '', // e.g. 'subfolder/'
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
-      defaultOrder: 'name-asc', // columns: name, size, dateModified; direction: asc, desc
-      title: 'S3 Bucket Browser',
-      subtitle: 'made with ♥ by qoomon',
-      logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
-      favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico'
+      
+      defaultOrder: 'name-asc' // (name|size|dateModified)-(asc|desc)
     }
   </script>
 
