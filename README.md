@@ -2,7 +2,7 @@
 ![-](favicon.ico)
 
 Single HTML file to browse AWS S3 buckets
-## [Demo](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org#worldbank/cameroon/)
+## [Demo](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org#worldbank/)
 
 ## Installation
 
