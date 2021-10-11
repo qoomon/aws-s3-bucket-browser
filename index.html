@@ -365,64 +365,58 @@
             })
             throw error
           }
+          
           let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
           this.nextContinuationToken = nextContinuationTokenTag && nextContinuationTokenTag.textContent
+          
           let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")]
             .map(tag => ({
               prefix: tag.querySelector('Prefix').textContent
                 .replace(RegExp(`^${escapeRegExp(config.rootPrefix)}`), '')
             }))
+            .filter(prefix => !config.keyExcludePatterns.find(pattern => pattern.test(prefix.prefix)))
+            .map(prefix => ({
+              type: 'prefix',
+              name: prefix.prefix.split('/').slice(-2)[0] + '/',
+              prefix: prefix.prefix
+            }))
+            
           let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")]
             .map(tag => ({
               key: tag.querySelector('Key').textContent,
               size: parseInt(tag.querySelector('Size').textContent),
               dateModified: new Date(tag.querySelector('LastModified').textContent)
             }))
-
-          this.pathContentTableData = []
-          commonPrefixes
-            .filter(prefix => !config.keyExcludePatterns.find(pattern => pattern.test(prefix.prefix)))
-            .forEach(prefix => {
-              this.pathContentTableData.push({
-                type: 'prefix',
-                name: prefix.prefix.split('/').slice(-2)[0] + '/',
-
-                prefix: prefix.prefix
-              })
-            })
-          contents
+            .filter(content => content.key !== decodeURI(this.pathPrefix))
             .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key)))
-            .forEach(content => {
+            .map(content => {
               if (content.key.endsWith('/') && !content.size) {
-                if (content.key !== decodeURI(this.pathPrefix)) {
-                  this.pathContentTableData.push({
-                    type: 'prefix',
-                    name: content.key.split('/')[0] + '/',
-
-                    prefix: `${this.pathPrefix}${content.key}`
-                  })
+                return {
+                  type: 'prefix',
+                  name: content.key.split('/')[0] + '/',
+                  prefix: `${this.pathPrefix}${content.key}`
                 }
-              } else {
-                let url = `${config.bucketUrl}/${content.key}`
-                let installUrl
+              } 
+              
+              let url = `${config.bucketUrl}/${content.key}`
+              let installUrl = undefined
+              if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
+                // generate manifest.plist install urls
+                installUrl = `itms-services://?action=download-manifest&url=${url.replace(/\/[^/]*$/,'')}/manifest.plist`
+              }
+              return {
+                type: 'content',
+                name: content.key.split('/').slice(-1)[0],
+                size: content.size,
+                dateModified: content.dateModified,
 
-                if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
-                  // generate manifest.plist install urls
-                  installUrl = `itms-services://?action=download-manifest&url=${url.replace(/\/[^/]*$/,'')}/manifest.plist`
-                }
-
-                this.pathContentTableData.push({
-                  type: 'content',
-                  name: content.key.split('/').slice(-1)[0],
-                  size: content.size,
-                  dateModified: content.dateModified,
-
-                  key: content.key,
-                  url,
-                  installUrl
-                })
+                key: content.key,
+                url,
+                installUrl
               }
             })
+
+          this.pathContentTableData = [...commonPrefixes, ...contents]
         },
         sortTableData(columnName) {
           return (rowA, rowB, isAsc) => {
