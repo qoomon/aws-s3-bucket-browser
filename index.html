@@ -24,6 +24,15 @@
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
       
+      bucketMaskUrl: undefined, 
+      // If bucketMaskUrl is set file urls will be changed from ${bucketUrl}/${s3_file} to ${bucketMaskUrl}/${s3_file}
+      //   bucketMaskUrl: undefined
+      //     => https://s3.eu-central-1.amazonaws.com/example-bucket/foo/bar.txt 
+      //   bucketMaskUrl: 'https://example.org'
+      //     => https://example.org/foo/bar.txt 
+      //   bucketMaskUrl: document.location.origin
+      //     => ${document.location.origin}/foo/bar.txt 
+      
       defaultOrder: 'name-asc' // (name|size|dateModified)-(asc|desc)
     }
   </script>
@@ -398,7 +407,7 @@
                 }
               } 
               
-              let url = `${config.bucketUrl}/${content.key}`
+              let url = `${config.bucketMaskUrl || config.bucketUrl}/${content.key}`
               let installUrl = undefined
               if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
                 // generate manifest.plist install urls
