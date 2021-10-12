@@ -10,6 +10,7 @@
       subtitle: 'made with ♥ by qoomon',
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
+      primaryColor: '#167df0',
       
       bucketUrl: undefined,
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
@@ -50,8 +51,8 @@
   <script src="https://unpkg.com/moment@2.29.1/min/moment.min.js" integrity="sha384-Uz1UHyakAAz121kPY0Nx6ZGzYeUTy9zAtcpdwVmFCEwiTGPA2K6zSGgkKJEQfMhK" crossorigin="anonymous"></script>
 </head>
 
-<body>
-  <div id="app" v-cloak>
+<body >
+  <div id="app" v-cloak :style="cssVars">
     <!-- Header -->
     <div class="level">
       <div class="level-left" style="display: flex;">
@@ -71,23 +72,23 @@
         <!-- Prefix Breadcrumps -->
         <div class="buttons is-pulled-left">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
-            type="is-info" rounded
+            type="is-primary" rounded
             tag="a" 
             :href="breadcrump.url" 
             icon-pack="fas"
             :icon-left="index == 0 ? 'folder' : ''"
             target=""
             :style="{ fontWeight: index == 0 ? 'bolder': ''}"
+            style="white-space: pre;"
             >
-            <template v-if="index == 0">/</template>
-            <template v-else="index > 0">{{breadcrump.name}}</template>
+            <template>{{index > 0 ? breadcrump.name : '/'}}</template>
           </b-button>
         </div>
         <!-- Paginating Buttons -->
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
           <b-button
-            type="is-info" rounded
+            type="is-primary" rounded
             icon-pack="fas"
             icon-left="angle-left"
             @click="previousPage"
@@ -95,7 +96,7 @@
             >
           </b-button>
           <b-button
-            type="is-info" rounded
+            type="is-primary" rounded
             icon-pack="fas"
             icon-right="angle-right"
             @click="nextPage"
@@ -123,21 +124,22 @@
             <b-icon 
               pack="far" 
               :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
-              style="margin-right: 1rem;"
+              style="margin-right: 0.5rem;"
               >
             </b-icon>
             <b-button 
-              type="is-info is-text" inverted rounded 
+              type="is-text" rounded 
               tag="a" 
-              :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`" 
-              style="text-align: left;"
+              :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"               
+              @click="document.activeElement.blur()"
+              style="white-space: pre;"
               >
-              {{ props.row.name }}
+              <template>{{ props.row.name }}</template>
             </b-button>
           </div>
           <b-button 
             v-if="props.row.installUrl"
-            type="is-info" rounded 
+            type="is-primary" rounded 
             tag="a" 
             :href="props.row.installUrl"  
             style="margin-left: 0.5rem; height: 1.7rem; padding: 12px;"
@@ -196,7 +198,7 @@
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
           <b-button
-            type="is-info" rounded
+            type="is-primary" rounded
             icon-pack="fas"
             icon-left="angle-left"
             @click="previousPage"
@@ -204,7 +206,7 @@
             >
           </b-button>
           <b-button
-            type="is-info" rounded
+            type="is-primary" rounded
             icon-pack="fas"
             icon-right="angle-right"
             @click="nextPage"
@@ -304,6 +306,11 @@
         windowWidth: window.innerWidth
       },
       computed: {
+        cssVars() {
+          return {
+            '--primary-color': this.config.primaryColor
+          }
+        },
         pathBreadcrumps() {
           return `/${this.pathPrefix}`.match(/(?=[/])|[^/]+[/]?/g)
             .map((pathPrefixPart, index, pathPrefixParts) => ({
@@ -498,7 +505,7 @@
     })
   </script>
 
-  <style scoped>
+  <style scoped>  
     body {
       width: 100vw;
       min-height: 100vh;
@@ -507,22 +514,22 @@
       background-color: #f5f5f5;
       overflow-y: auto;
     }
-
+    
     .button.is-primary {
-      background-color: #167df0 !important;
-      border-color: transparent !important;
-      color: #fff !important;
+      background-color: var(--primary-color) !important;
     }
-
     .button.is-text {
-      height: auto !important;
-      user-select: text !important;
-      box-shadow: none !important;
-      white-space: unset !important;
-      background: none !important;
-      background-color: transparent !important;
-      text-decoration: none !important;
       padding: 0 !important;
+      height: auto !important;
+      text-decoration: none !important;
+      box-shadow: none !important;
+      background-color: unset !important;
+      user-select: text !important;
+      color: var(--primary-color) !important;
+      font-weight: 500;
+    }
+    .button.is-text:focus {
+      font-weight: bold;
     }
 
     .name-column-details {
@@ -544,7 +551,6 @@
       text-align: center;
       color: darkgray;
     }
-
     .footer-bucket-url a {
       color: inherit;
     }
