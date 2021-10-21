@@ -127,25 +127,28 @@
               style="margin-right: 0.5rem;"
               >
             </b-icon>
-            <b-button 
-              type="is-text" rounded 
-              tag="a" 
-              :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"               
-              @click="document.activeElement.blur()"
-              style="white-space: pre;"
-              >
-              <template>{{ props.row.name }}</template>
-            </b-button>
+            <div style="text-align: left;">
+              <b-button 
+                type="is-text" rounded 
+                tag="a" 
+                :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"               
+                @click="document.activeElement.blur()"
+                style="text-align: left; white-space: pre-wrap;"
+                >
+                <template>{{ props.row.name }}</template>
+              </b-button>
+              <br>
+              <b-button 
+                v-if="props.row.installUrl"
+                type="is-primary" rounded outlined
+                tag="a" 
+                :href="props.row.installUrl"  
+                style="height: 0; padding: 0.6rem; margin-top: 0.4rem; font-size: 0.8rem;"
+                >
+                Install
+              </b-button>
+            </div>
           </div>
-          <b-button 
-            v-if="props.row.installUrl"
-            type="is-primary" rounded 
-            tag="a" 
-            :href="props.row.installUrl"  
-            style="margin-left: 0.5rem; height: 1.7rem; padding: 12px;"
-            >
-            Install
-          </b-button>
           
           <div 
             v-if="cardView && (props.row.size || props.row.dateModified)"
@@ -161,7 +164,6 @@
               <div>{{ props.row.dateModified | formatDateRelative }}</div>
             </b-tooltip>
           </div>
-
         </b-table-column>
         <b-table-column
           v-slot="props"
@@ -518,6 +520,12 @@
     .button.is-primary {
       background-color: var(--primary-color) !important;
     }
+    .button.is-primary.is-outlined {
+      background-color: transparent !important;
+      border-color: var(--primary-color) !important;
+      color: var(--primary-color) !important;
+    }
+
     .button.is-text {
       padding: 0 !important;
       height: auto !important;
@@ -533,10 +541,11 @@
     }
 
     .name-column-details {
-      flex: auto;
-      height: 3rem;
-      flex-basis: 6rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
       flex-shrink: 0;
+      min-width: 5rem;
       font-size: 0.85rem;
       line-height: 1.5rem;
     }
