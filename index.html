@@ -155,7 +155,7 @@
             class="name-column-details"
             >
             <div>{{ formatBytes(props.row.size) }}</div>
-            <div>
+
             <b-tooltip
               :active="!!props.row.dateModified"
               type="is-light"
@@ -171,7 +171,7 @@
                 <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
               </template>
             </b-tooltip>
-            </div>
+
           </div>
         </b-table-column>
         <b-table-column
@@ -569,7 +569,7 @@
     .name-column-details {
       display: flex;
       align-items: flex-end;
-      justify-content: flex-end;
+      justify-content: center;
       flex-shrink: 0;
       min-width: 5rem;
       font-size: 0.85rem;
