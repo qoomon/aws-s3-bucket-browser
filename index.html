@@ -124,7 +124,7 @@
             <b-icon 
               pack="far" 
               :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
-              style="margin-right: 0.5rem;"
+              class="name-column-icon"
               >
             </b-icon>
             <div style="text-align: left;">
@@ -143,7 +143,7 @@
                 type="is-primary" rounded outlined
                 tag="a" 
                 :href="props.row.installUrl"  
-                style="height: 0; padding: 0.6rem; margin-top: 0.4rem; font-size: 0.8rem;"
+                class="name-column-install-button"
                 >
                 Install
               </b-button>
@@ -154,15 +154,24 @@
             v-if="cardView && (props.row.size || props.row.dateModified)"
             class="name-column-details"
             >
+            <div>{{ formatBytes(props.row.size) }}</div>
+            <div>
             <b-tooltip
+              :active="!!props.row.dateModified"
               type="is-light"
+              size="is-small"
               position="is-left"
               animated
-              :label="props.row.dateModified | formatDate"
+              multilined
               >
-              <div>{{ props.row.size | formatBytes}}</div>
-              <div>{{ props.row.dateModified | formatDateRelative }}</div>
+              <div>{{ formatDateTime_relative(props.row.dateModified) }}</div>
+              <template v-slot:content>
+                <span>{{ formatDateTime_date(props.row.dateModified) }}</span>
+                <br>
+                <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
+              </template>
             </b-tooltip>
+            </div>
           </div>
         </b-table-column>
         <b-table-column
@@ -173,7 +182,7 @@
           centered width="128"
           cell-class="size-column"
           >
-          {{ props.row.size | formatBytes}}
+          {{ formatBytes(props.row.size) }}
         </b-table-column>
         <b-table-column 
           v-slot="props"
@@ -184,13 +193,19 @@
           cell-class="modified-column"
           >
           <b-tooltip
+            :active="!!props.row.dateModified"
             type="is-light"
             size="is-small"
             position="is-left"
             animated
-            :label="props.row.dateModified | formatDate"
+            multilined
             >
-            {{ props.row.dateModified | formatDateRelative }}
+            <div>{{ formatDateTime_relative(props.row.dateModified) }}</div>
+            <template v-slot:content>
+              <span>{{ formatDateTime_date(props.row.dateModified) }}</span>
+              <br>
+              <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
+            </template>
           </b-tooltip>
         </b-table-column>
       </b-table>
@@ -459,20 +474,7 @@
 
             return 0
           }
-        }
-      },
-      async mounted() {
-        window.onpopstate = () => this.refresh()
-        window.addEventListener('resize', () => {
-          this.windowWidth = window.innerWidth
-        })
-
-        this.refresh()
-      },
-      async beforeDestroy() {
-        window.removeEventListener('resize')
-      },
-      filters: {
+        },
         formatBytes(size) {
           if (!size) {
             return '-'
@@ -491,18 +493,27 @@
           }
           return (size / GB).toFixed(2) + ' GB'
         },
-        formatDate(date) {
-          if (!date) {
-            return '-'
-          }
-          return moment(date).format('dddd, MMMM Do, YYYY • hh:mm:ss')
+        formatDateTime_date(date) {
+          
+          return date ? moment(date).format('dddd, YYYY/MM/DD') : '-'
         },
-        formatDateRelative(date) {
-          if (!date) {
-            return '-'
-          }
-          return moment(date).fromNow()
+        formatDateTime_time(date) {
+          return date ? moment(date).format('hh:mm:ss') : '-'
+        },
+        formatDateTime_relative(date) {
+          return date ? moment(date).fromNow() : '-'
         }
+      },
+      async mounted() {
+        window.onpopstate = () => this.refresh()
+        window.addEventListener('resize', () => {
+          this.windowWidth = window.innerWidth
+        })
+
+        this.refresh()
+      },
+      async beforeDestroy() {
+        window.removeEventListener('resize')
       }
     })
   </script>
@@ -512,7 +523,7 @@
       width: 100vw;
       min-height: 100vh;
       position: relative;
-      padding: 1.25rem 2.5rem 1.25rem 1.5rem;
+      padding: 1.25rem 2.5rem 2.5rem 1.5rem;
       background-color: #f5f5f5;
       overflow-y: auto;
     }
@@ -540,16 +551,32 @@
       font-weight: bold;
     }
 
+    .name-column-icon {
+      display: block;
+      text-align: left;
+      flex-basis: 1.5rem;
+      flex-grow: 0;
+      flex-shrink: 0;"
+    }
+    
+    .name-column-install-button {
+      height: 0;
+      padding: 0.6rem;
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+    }
+
     .name-column-details {
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: flex-end;
       flex-shrink: 0;
       min-width: 5rem;
       font-size: 0.85rem;
       line-height: 1.5rem;
-    }
-
+      flex-direction: column;
+  }
+  
     .footer-bucket-url {
       position: absolute;
       bottom: 0;
