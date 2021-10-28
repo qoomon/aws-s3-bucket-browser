@@ -8,15 +8,40 @@ Single HTML file to browse AWS S3 buckets
 
 #### Self-Hosted
 * Just <a download href="https://raw.githubusercontent.com/qoomon/aws-s3-bucket-browser/master/index.html">download</a> `index.html` and put at root level of S3 bucket.
-  * Adjust [config](index.html#L6-L23) within `index.html` if needed.
-    * `bucketUrl` - string
-    * `rootPrefix` - string
-    * `title` - string
-    * `subtitle` - string
-    * `logo` - location
-    * `favicon` - location
-    * `keyExcludePatterns` - array of regex
-    * `pageSize` - number
+  * Adjust [config](index.html#L8-L38) within `index.html` if needed, e.g.
+    ```js
+    const config = {
+      title: 'S3 Bucket Browser',
+      subtitle: 'made with ♥ by qoomon',
+      logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
+      favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
+      primaryColor: '#167df0',
+      
+      bucketUrl: undefined,
+      // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
+      //   This will only work for locations like these
+      //   * https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
+      //   * http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
+      //   * http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
+      // If bucketUrl is set manually, ensure this is the bucket Rest API URL.
+      //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
+      //   The URL should return an XML document with <ListBucketResult> as root element.
+      rootPrefix: '', // e.g. 'subfolder/'
+      keyExcludePatterns: [/^index\.html$/],
+      pageSize: 50,
+      
+      bucketMaskUrl: undefined, 
+      // If bucketMaskUrl is set file urls will be changed from ${bucketUrl}/${s3_file} to ${bucketMaskUrl}/${s3_file}
+      //   bucketMaskUrl: undefined
+      //     => https://s3.eu-central-1.amazonaws.com/example-bucket/foo/bar.txt 
+      //   bucketMaskUrl: 'https://example.org'
+      //     => https://example.org/foo/bar.txt 
+      //   bucketMaskUrl: document.location.origin
+      //     => ${document.location.origin}/foo/bar.txt 
+      
+      defaultOrder: 'name-asc' // (name|size|dateModified)-(asc|desc)
+    }
+    ```
 * ⚠️ Ensure following Bucket Permissions
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
   * Grant public read permission by `Access Control List` or `Bucket Policy`
