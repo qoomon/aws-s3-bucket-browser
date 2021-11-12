@@ -26,7 +26,7 @@ Single HTML file to browse AWS S3 buckets
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL.
       //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
       //   The URL should return an XML document with <ListBucketResult> as root element.
-      rootPrefix: '', // e.g. 'subfolder/'
+      rootPrefix: undefined, // e.g. 'subfolder/'
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
       
