@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.5.0 -->
+<!-- S3 Bucket Explorer Version: 1.7.1 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -21,7 +21,7 @@
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL.
       //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
       //   The URL should return an XML document with <ListBucketResult> as root element.
-      rootPrefix: '', // e.g. 'subfolder/'
+      rootPrefix: undefined, // e.g. 'subfolder/'
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
       
@@ -295,6 +295,7 @@
 
     console.log("S3 Bucket REST API: " + config.bucketUrl)
 
+    config.rootPrefix = config.rootPrefix || ''
     if (config.rootPrefix) {
       if (!config.rootPrefix.endsWith('/')) {
         config.rootPrefix += '/'
