@@ -7,11 +7,11 @@ Single HTML file to browse AWS S3 buckets
 ## Installation
 
 #### Self-Hosted
-* Just download [`index.html`](https://raw.githubusercontent.com/qoomon/aws-s3-bucket-browser/master/index.html) and put at root level of S3 bucket.
-  * Adjust [config](index.html#L8-L38) within `index.html` if needed, e.g.
+* Just download [`index.html`](index.html) and upload it to your bucket.
+  * Adjust [config](index.html#L8-L37) within `index.html` if needed, e.g.
     ```js
     const config = {
-      title: 'S3 Bucket Browser',
+      title: 'Bucket Browser',
       subtitle: 'made with ♥ by qoomon',
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
@@ -20,20 +20,19 @@ Single HTML file to browse AWS S3 buckets
       bucketUrl: undefined,
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
-      //   * https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
-      //   * http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
-      //   * http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
-      // If bucketUrl is set manually, ensure this is the bucket Rest API URL.
-      //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
+      //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME/index.html
+      //   * http://BUCKET-NAME.s3-website-BUCKET-REGION.amazonaws.com/index.html
+      //   * https://storage.googleapis.com/BUCKET-NAME/index.html
+      // If bucketUrl is set manually, ensure this is the bucket Rest API URL, e.g.
+      //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
+      //   * https://storage.googleapis.com/BUCKET-NAME
       //   The URL should return an XML document with <ListBucketResult> as root element.
       rootPrefix: undefined, // e.g. 'subfolder/'
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
       
       bucketMaskUrl: undefined, 
-      // If bucketMaskUrl is set file urls will be changed from ${bucketUrl}/${s3_file} to ${bucketMaskUrl}/${s3_file}
-      //   bucketMaskUrl: undefined
-      //     => https://s3.eu-central-1.amazonaws.com/example-bucket/foo/bar.txt 
+      // If bucketMaskUrl is set file urls will be changed from ${bucketUrl}/${file} to ${bucketMaskUrl}/${file}
       //   bucketMaskUrl: 'https://example.org'
       //     => https://example.org/foo/bar.txt 
       //   bucketMaskUrl: document.location.origin

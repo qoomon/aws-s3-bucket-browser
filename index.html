@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.7.3 -->
+<!-- S3 Bucket Explorer Version: 1.8.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -6,7 +6,7 @@
 <head>
   <script>
     const config = {
-      title: 'S3 Bucket Browser',
+      title: 'Bucket Browser',
       subtitle: 'made with ♥ by qoomon',
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
@@ -15,20 +15,19 @@
       bucketUrl: undefined,
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
-      //   * https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
-      //   * http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
-      //   * http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
-      // If bucketUrl is set manually, ensure this is the bucket Rest API URL.
-      //   e.g bucketUrl: "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME"
+      //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME/index.html
+      //   * http://BUCKET-NAME.s3-website-BUCKET-REGION.amazonaws.com/index.html
+      //   * https://storage.googleapis.com/BUCKET-NAME/index.html
+      // If bucketUrl is set manually, ensure this is the bucket Rest API URL, e.g.
+      //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
+      //   * https://storage.googleapis.com/BUCKET-NAME
       //   The URL should return an XML document with <ListBucketResult> as root element.
       rootPrefix: undefined, // e.g. 'subfolder/'
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
       
       bucketMaskUrl: undefined, 
-      // If bucketMaskUrl is set file urls will be changed from ${bucketUrl}/${s3_file} to ${bucketMaskUrl}/${s3_file}
-      //   bucketMaskUrl: undefined
-      //     => https://s3.eu-central-1.amazonaws.com/example-bucket/foo/bar.txt 
+      // If bucketMaskUrl is set file urls will be changed from ${bucketUrl}/${file} to ${bucketMaskUrl}/${file}
       //   bucketMaskUrl: 'https://example.org'
       //     => https://example.org/foo/bar.txt 
       //   bucketMaskUrl: document.location.origin
@@ -277,30 +276,48 @@
 
     // try adjusting bucket url to bucket rest api endpoint
     let match
+    let type
+    
     if (!match) {
+      type = 'AWS'
       // check for urls like https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/s3\.(?<region>[^.]+)\.amazonaws.com\/(?<name>[^/]+)/)
     }
     if (!match) {
+      type = 'AWS'
       // check for urls like http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com/)
     }
     if (!match) {
+      type = 'AWS'
       // check for urls like http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com/)
     }
-    if (match) {
-      config.bucketUrl = `${match.groups.protocol}://s3.${match.groups.region}.amazonaws.com/${match.groups.name}`
+     if (!match) {
+      type = 'GCP'
+      // check for urls like https://storage.googleapis.com/example-bucket/index.html
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/storage\.googleapis\.com\/(?<name>[^.]+)/)
     }
-
-    console.log("S3 Bucket REST API: " + config.bucketUrl)
+    
+    if (match) {
+      switch (type) {
+        case 'AWS':
+          config.bucketUrl = `${match.groups.protocol}://s3.${match.groups.region}.amazonaws.com/${match.groups.name}`
+          break;
+        case 'GCP':
+          config.bucketUrl = `${match.groups.protocol}://storage.googleapis.com/${match.groups.name}`
+          break;
+      }  
+    }
+    
+    console.log("Bucket REST API: " + config.bucketUrl)
 
     config.rootPrefix = config.rootPrefix || ''
     if (config.rootPrefix) {
       if (!config.rootPrefix.endsWith('/')) {
         config.rootPrefix += '/'
       }
-      console.log("S3 Bucket Root Prefix: " + config.rootPrefix)
+      console.log("Bucket Root Prefix: " + config.rootPrefix)
     }
 
     document.title = config.title
