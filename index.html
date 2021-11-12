@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.7.2 -->
+<!-- S3 Bucket Explorer Version: 1.7.3 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -430,7 +430,7 @@
                 }
               } 
               
-              let url = `${config.bucketMaskUrl || config.bucketUrl}/${content.key}`
+              let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${content.key}`
               let installUrl = undefined
               if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
                 // generate manifest.plist install urls
