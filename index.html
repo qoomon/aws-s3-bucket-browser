@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.7.1 -->
+<!-- S3 Bucket Explorer Version: 1.7.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -364,8 +364,6 @@
           }
         },
         async refresh() {
-          this.pathPrefix = window.location.hash.replace(/^#\/?/, '')
-
           let listBucketResult
           try {
             if (!config.bucketUrl) {
@@ -506,7 +504,7 @@
         }
       },
       async mounted() {
-        window.onpopstate = () => this.refresh()
+        window.onpopstate = () => this.pathPrefix = window.location.hash.replace(/^#\/?/, '')
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth
         })
