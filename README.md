@@ -1,4 +1,4 @@
-# AWS S3 Bucket Browser
+# AWS S3 Bucket Browser [![Sparkline](https://stars.medv.io/qoomon/aws-s3-bucket-browser.svg)](https://stars.medv.io/qoomon/aws-s3-bucket-browser)
 ![-](favicon.ico)
 
 Single HTML file to browse AWS S3 buckets
