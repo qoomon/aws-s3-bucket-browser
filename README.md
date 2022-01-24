@@ -106,6 +106,6 @@ If you use CloudFront in upfront of your S3 bucket ensure following CloudFront s
 - Allowed/Cached HTTP Methods: `GET`, `HEAD`, `OPTIONS`
 - Cached Based on Selected Headers: `Whitelist`
   - `Access-Control-Request-Headers`
-  - `Access-Control-Request-Methods`
+  - `Access-Control-Request-Method`
   - `Origin`
 - Query String Forwarding and Caching: `Forward all`
