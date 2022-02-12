@@ -23,6 +23,7 @@ Single HTML file to browse AWS S3 buckets
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME/index.html
       //   * http://BUCKET-NAME.s3-website-BUCKET-REGION.amazonaws.com/index.html
       //   * https://storage.googleapis.com/BUCKET-NAME/index.html
+      //   * https://BUCKET-NAME.s3-web.BUCKET-REGION.cloud-object-storage.appdomain.cloud/
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL, e.g.
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
       //   * https://storage.googleapis.com/BUCKET-NAME
@@ -109,3 +110,20 @@ If you use CloudFront in upfront of your S3 bucket ensure following CloudFront s
   - `Access-Control-Request-Method`
   - `Origin`
 - Query String Forwarding and Caching: `Forward all`
+
+### IBM Cloud Object Storage Setup
+IBM Cloud Object storage only supports virtual host-style addressing, i.e. `https://<bucket-name>s3-web.<region>.cloud-object-storage.appdomain.cloud/` for static website hosting. Otherwise follow the instructions
+in this [tutorial](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-static-website-tutorial) to configure your bucket. In addition, you may need to [configure CORS](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-curl#curl-new-cors) for your bucket.
+
+```
+<CORSConfiguration>
+  <CORSRule>
+      <AllowedOrigin>*</AllowedOrigin>
+      <AllowedMethod>GET</AllowedMethod>
+      <AllowedHeader>*</AllowedHeader>
+  </CORSRule>
+</CORSConfiguration>
+```
+
+A example deployment is available [here](https://s3-bucket-browser-demo.s3-web.us-south.cloud-object-storage.appdomain.cloud/).
+
