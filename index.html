@@ -18,6 +18,7 @@
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME/index.html
       //   * http://BUCKET-NAME.s3-website-BUCKET-REGION.amazonaws.com/index.html
       //   * https://storage.googleapis.com/BUCKET-NAME/index.html
+      //   * https://BUCKET-NAME.s3-web.BUCKET-REGION.cloud-object-storage.appdomain.cloud/
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL, e.g.
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
       //   * https://storage.googleapis.com/BUCKET-NAME
@@ -298,6 +299,11 @@
       // check for urls like https://storage.googleapis.com/example-bucket/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/storage\.googleapis\.com\/(?<name>[^.]+)/)
     }
+    if (!match) {
+      type = 'IBM'
+      // check for urls like http://example-bucket.s3-web.us-south.cloud-object-storage.appdomain.cloud/index.html
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-web\.(?<region>[^.]+)\.cloud-object-storage\.appdomain\.cloud/)
+    }
     
     if (match) {
       switch (type) {
@@ -306,6 +312,9 @@
           break;
         case 'GCP':
           config.bucketUrl = `${match.groups.protocol}://storage.googleapis.com/${match.groups.name}`
+          break;
+        case 'IBM':
+          config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.s3.${match.groups.region}.cloud-object-storage.appdomain.cloud/`
           break;
       }  
     }
