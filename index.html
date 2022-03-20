@@ -531,6 +531,7 @@
       },
       async mounted() {
         window.onpopstate = () => this.pathPrefix = window.location.hash.replace(/^#\/?/, '')
+        window.onpopstate()
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth
         })
