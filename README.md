@@ -115,7 +115,7 @@ If you use CloudFront in upfront of your S3 bucket ensure following CloudFront s
 IBM Cloud Object storage only supports virtual host-style addressing, i.e. `https://<bucket-name>s3-web.<region>.cloud-object-storage.appdomain.cloud/` for static website hosting. Otherwise follow the instructions
 in this [tutorial](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-static-website-tutorial) to configure your bucket. In addition, you may need to [configure CORS](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-curl#curl-new-cors) for your bucket.
 
-```
+```xml
 <CORSConfiguration>
   <CORSRule>
       <AllowedOrigin>*</AllowedOrigin>
