@@ -393,7 +393,7 @@
           let listBucketResult
           try {
             if (!config.bucketUrl) {
-              throw Error("Bucket url is undefined!")
+              throw Error("Bucket URL is undefined!")
             }
 
             let bucketListApiUrl = `${config.bucketUrl}?list-type=2`
@@ -412,7 +412,7 @@
 
             listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml")
             if (!listBucketResult.querySelector('ListBucketResult > Delimiter')) {
-              throw Error("bucketUrl is not a valid bucket API URL, response does not contain <ListBucketResult><Delimiter>.")
+              throw Error(`Bucket URL ${config.bucketUrl} is not a valid bucket API URL, response does not contain <ListBucketResult><Delimiter> tag.`)
             }
           } catch (error) {
             this.$buefy.notification.open({
