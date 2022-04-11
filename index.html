@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.8.1 -->
+<!-- S3 Bucket Explorer Version: 1.8.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -411,8 +411,8 @@
             let listBucketResultXml = await listBucketResultResponse.text()
 
             listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml")
-            if (!listBucketResult.querySelector('ListBucketResult')) {
-              throw Error("List bucket response does not contain <ListBucketResult> tag!")
+            if (!listBucketResult.querySelector('ListBucketResult > Delimiter')) {
+              throw Error("bucketUrl is not a valid bucket API URL, response does not contain <ListBucketResult><Delimiter>.")
             }
           } catch (error) {
             this.$buefy.notification.open({
