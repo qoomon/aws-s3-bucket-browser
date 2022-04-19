@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.8.2 -->
+<!-- S3 Bucket Explorer Version: 1.8.3 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -456,11 +456,11 @@
                 }
               } 
               
-              let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${content.key}`
+              let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(content.key)}`
               let installUrl = undefined
               if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
                 // generate manifest.plist install urls
-                installUrl = `itms-services://?action=download-manifest&url=${url.replace(/\/[^/]*$/,'')}/manifest.plist`
+                installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(url)}`
               }
               return {
                 type: 'content',
