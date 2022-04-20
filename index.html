@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.8.3 -->
+<!-- S3 Bucket Explorer Version: 1.8.4 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -11,7 +11,7 @@
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
       primaryColor: '#167df0',
-      
+
       bucketUrl: undefined,
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
@@ -26,14 +26,14 @@
       rootPrefix: undefined, // e.g. 'subfolder/'
       keyExcludePatterns: [/^index\.html$/],
       pageSize: 50,
-      
-      bucketMaskUrl: undefined, 
+
+      bucketMaskUrl: undefined,
       // If bucketMaskUrl is set file urls will be changed from ${bucketUrl}/${file} to ${bucketMaskUrl}/${file}
       //   bucketMaskUrl: 'https://example.org'
-      //     => https://example.org/foo/bar.txt 
+      //     => https://example.org/foo/bar.txt
       //   bucketMaskUrl: document.location.origin
-      //     => ${document.location.origin}/foo/bar.txt 
-      
+      //     => ${document.location.origin}/foo/bar.txt
+
       defaultOrder: 'name-asc' // (name|size|dateModified)-(asc|desc)
     }
   </script>
@@ -43,7 +43,7 @@
   <link id="favicon" rel="shortcut icon" />
   <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js" integrity="sha384-ULpZhk1pvhc/UK5ktA9kwb2guy9ovNSTyxPNHANnA35YjBQgdwI+AhLkixDvdlw4" crossorigin="anonymous"></script>
   <script>Vue.config.productionTip = false;</script>
-  <style>[v-cloak] {display: none}</style> 
+  <style>[v-cloak] {display: none}</style>
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css" integrity="sha384-rJzKgf2UUnpzXvYOutlTiL8YYlEwrfhBmJI+ymqTQ67Dw3qJJeHA76pmK2IaTjuD" crossorigin="anonymous">
   <script src="https://unpkg.com/buefy@0.9.10/dist/buefy.min.js" integrity="sha384-T58J1OGlL1z5XNzGTewXlzY/GUx9W3Nw7jUux1EJSA11VzG7YVKuzRTKo/lo/xRc" crossorigin="anonymous"></script>
@@ -71,10 +71,10 @@
       <div class="container is-clearfix">
         <!-- Prefix Breadcrumps -->
         <div class="buttons is-pulled-left">
-          <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url" 
+          <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
             type="is-primary" rounded
-            tag="a" 
-            :href="breadcrump.url" 
+            tag="a"
+            :href="breadcrump.url"
             icon-pack="fas"
             :icon-left="index == 0 ? 'folder' : ''"
             target=""
@@ -106,14 +106,14 @@
         </div>
       </div>
 
-      <!-- Content Table --> 
-      <b-table 
+      <!-- Content Table -->
+      <b-table
         :data="pathContentTableData"
         :default-sort="config.defaultOrder.split('-')[0]"
         :default-sort-direction="config.defaultOrder.split('-')[1]"
         :mobile-cards="true"
         >
-        <b-table-column 
+        <b-table-column
           v-slot="props"
           field="name"
           label="Name"
@@ -121,36 +121,36 @@
           cell-class="name-column"
           >
           <div style="display: flex; align-items: center;">
-            <b-icon 
-              pack="far" 
+            <b-icon
+              pack="far"
               :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
               class="name-column-icon"
               >
             </b-icon>
             <div style="text-align: left;">
-              <b-button 
-                type="is-text" rounded 
-                tag="a" 
-                :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"               
+              <b-button
+                type="is-text" rounded
+                tag="a"
+                :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"
                 @click="document.activeElement.blur()"
                 style="text-align: left; white-space: pre-wrap;"
                 >
                 <template>{{ props.row.name }}</template>
               </b-button>
               <br>
-              <b-button 
+              <b-button
                 v-if="props.row.installUrl"
                 type="is-primary" rounded outlined
-                tag="a" 
-                :href="props.row.installUrl"  
+                tag="a"
+                :href="props.row.installUrl"
                 class="name-column-install-button"
                 >
                 Install
               </b-button>
             </div>
           </div>
-          
-          <div 
+
+          <div
             v-if="cardView && (props.row.size || props.row.dateModified)"
             class="name-column-details"
             >
@@ -176,7 +176,7 @@
         </b-table-column>
         <b-table-column
           v-slot="props"
-          field="size" numeric 
+          field="size" numeric
           label="Size"
           sortable :custom-sort="sortTableData('size')"
           centered width="128"
@@ -184,9 +184,9 @@
           >
           {{ formatBytes(props.row.size) }}
         </b-table-column>
-        <b-table-column 
+        <b-table-column
           v-slot="props"
-          field="dateModified" 
+          field="dateModified"
           label="Date Modified"
           sortable :custom-sort="sortTableData('dateModified')"
           centered width="256"
@@ -209,8 +209,8 @@
           </b-tooltip>
         </b-table-column>
       </b-table>
-      
-      <!-- Paginating Buttons -->  
+
+      <!-- Paginating Buttons -->
       <div class="container is-clearfix" style="margin-top: 1rem;">
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
@@ -233,10 +233,10 @@
         </div>
       </div>
     </div>
-    
-    <!-- Footer --> 
+
+    <!-- Footer -->
     <div class="footer-bucket-url">
-      <a :href="`${config.bucketUrl}?prefix=${config.rootPrefix}${pathPrefix}`">Bucket: {{ config.bucketUrl }}</a>
+      <a :href="`${config.bucketUrl}?prefix=${bucketPrefix}`">Bucket: {{ config.bucketUrl }}</a>
     </div>
   </div>
   <!-- GitHub Corner -->
@@ -247,7 +247,7 @@
 
   <script>
     function escapeRegExp(text) {
-      // $& means the whole matched string 
+      // $& means the whole matched string
       return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     }
 
@@ -278,7 +278,7 @@
     // try adjusting bucket url to bucket rest api endpoint
     let match
     let type
-    
+
     if (!match) {
       type = 'AWS'
       // check for urls like https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
@@ -304,7 +304,7 @@
       // check for urls like http://example-bucket.s3-web.us-south.cloud-object-storage.appdomain.cloud/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-web\.(?<region>[^.]+)\.cloud-object-storage\.appdomain\.cloud/)
     }
-    
+
     if (match) {
       switch (type) {
         case 'AWS':
@@ -316,16 +316,14 @@
         case 'IBM':
           config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.s3.${match.groups.region}.cloud-object-storage.appdomain.cloud/`
           break;
-      }  
+      }
     }
-    
+
     console.log("Bucket REST API: " + config.bucketUrl)
 
     config.rootPrefix = config.rootPrefix || ''
     if (config.rootPrefix) {
-      if (!config.rootPrefix.endsWith('/')) {
-        config.rootPrefix += '/'
-      }
+      config.rootPrefix = config.rootPrefix.replace(/\/?$/, '/') // ensure trailing slash
       console.log("Bucket Root Prefix: " + config.rootPrefix)
     }
 
@@ -356,6 +354,7 @@
           }
         },
         pathBreadcrumps() {
+          //TODO
           return `/${this.pathPrefix}`.match(/(?=[/])|[^/]+[/]?/g)
             .map((pathPrefixPart, index, pathPrefixParts) => ({
               name: decodeURI(pathPrefixPart),
@@ -364,6 +363,9 @@
         },
         cardView() {
           return this.windowWidth <= 768
+        },
+        bucketPrefix() {
+          return `${config.rootPrefix}${this.pathPrefix}`
         }
       },
       watch: {
@@ -398,8 +400,7 @@
 
             let bucketListApiUrl = `${config.bucketUrl}?list-type=2`
             bucketListApiUrl += `&delimiter=/`
-            let bucketPrefix = `${config.rootPrefix}${this.pathPrefix}`
-            bucketListApiUrl += `&prefix=${bucketPrefix}`
+            bucketListApiUrl += `&prefix=${this.bucketPrefix}`
 
             if (config.pageSize) {
               bucketListApiUrl += `&max-keys=${config.pageSize}`
@@ -423,10 +424,10 @@
             })
             throw error
           }
-          
+
           let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
           this.nextContinuationToken = nextContinuationTokenTag && nextContinuationTokenTag.textContent
-          
+
           let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")]
             .map(tag => ({
               prefix: tag.querySelector('Prefix').textContent
@@ -438,14 +439,14 @@
               name: prefix.prefix.split('/').slice(-2)[0] + '/',
               prefix: prefix.prefix
             }))
-            
+
           let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")]
             .map(tag => ({
               key: tag.querySelector('Key').textContent,
               size: parseInt(tag.querySelector('Size').textContent),
               dateModified: new Date(tag.querySelector('LastModified').textContent)
             }))
-            .filter(content => content.key !== decodeURI(this.pathPrefix))
+            .filter(content => content.key !== decodeURI(this.bucketPrefix))
             .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key)))
             .map(content => {
               if (content.key.endsWith('/') && !content.size) {
@@ -454,8 +455,8 @@
                   name: content.key.split('/')[0] + '/',
                   prefix: `${this.pathPrefix}${content.key}`
                 }
-              } 
-              
+              }
+
               let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(content.key)}`
               let installUrl = undefined
               if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
@@ -519,7 +520,7 @@
           return (size / GB).toFixed(2) + ' GB'
         },
         formatDateTime_date(date) {
-          
+
           return date ? moment(date).format('ddd, DD. MMM YYYY') : '-'
         },
         formatDateTime_time(date) {
@@ -544,7 +545,7 @@
     })
   </script>
 
-  <style scoped>  
+  <style scoped>
     body {
       width: 100vw;
       min-height: 100vh;
@@ -553,7 +554,7 @@
       background-color: #f5f5f5;
       overflow-y: auto;
     }
-    
+
     .button.is-primary {
       background-color: var(--primary-color) !important;
     }
@@ -584,7 +585,7 @@
       flex-grow: 0;
       flex-shrink: 0;"
     }
-    
+
     .name-column-install-button {
       height: 0;
       padding: 0.6rem;
@@ -602,7 +603,7 @@
       line-height: 1.5rem;
       flex-direction: column;
   }
-  
+
     .footer-bucket-url {
       position: absolute;
       bottom: 0;
