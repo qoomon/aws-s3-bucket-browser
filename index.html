@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.9.1 -->
+<!-- S3 Bucket Explorer Version: 1.9.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -70,7 +70,7 @@
 
     <div class="container">
       <!-- Navigation Bar -->
-      <div class="container is-clearfix">
+      <div class="container is-clearfix" style="margin-bottom: 1rem;">
         <!-- Prefix Breadcrumps -->
         <div class="buttons is-pulled-left" style="width: 100%;">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
@@ -85,45 +85,49 @@
             >
             <template v-if="index > 0">{{ breadcrump.name }}</template>
           </b-button>
-          <!-- Prefix Search Input -->
-          <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
-              :class="searchPrefix && pathPrefix.replace(/^.*\//,'') === searchPrefix ? 'search-prefix-matches-path-prefix' : ''"
-              style="flex: auto;">
-              <b-input
-                  rounded
-                  v-model="searchPrefix"
-                  placeholder="search by prefix"
-                  icon="magnify"
-                  icon-clickable
-                  @icon-click="searchByPrefix"
-                  icon-right="close-circle"
-                  icon-right-clickable
-                  @icon-right-click="searchPrefix = ''; searchByPrefix()"
-                  @keyup.enter.native="searchByPrefix">
-              </b-input>
-          </b-field>
+          <div class="container" style="display: flex;">
+            <!-- Prefix Search Input -->
+            <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
+                :class="searchPrefix && pathPrefix.replace(/^.*\//,'') === searchPrefix ? 'search-prefix-matches-path-prefix' : ''"
+                style="flex: auto;">
+                <b-input
+                    rounded
+                    v-model="searchPrefix"
+                    placeholder="search by prefix"
+                    icon="magnify"
+                    icon-clickable
+                    @icon-click="searchByPrefix"
+                    icon-right="close-circle"
+                    icon-right-clickable
+                    @icon-right-click="searchPrefix = ''; searchByPrefix()"
+                    @keyup.enter.native="searchByPrefix">
+                </b-input>
+            </b-field>
+
+            <!-- Paginating Buttons -->
+            <div class="container" v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+              style="display: contents;">
+              <b-button
+                type="is-primary" rounded
+                icon-pack="fas"
+                icon-left="angle-left"
+                @click="previousPage"
+                :disabled="previousContinuationTokens.length === 0"
+                style="margin-left: 2rem;">
+              </b-button>
+              <b-button
+                type="is-primary" rounded
+                icon-pack="fas"
+                icon-right="angle-right"
+                @click="nextPage"
+                :disabled="!nextContinuationToken"
+                >
+              </b-button>
+            </div>
+          </div>
         </div>
 
-        <!-- Paginating Buttons -->
-        <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
-          class="buttons is-pulled-right">
-          <b-button
-            type="is-primary" rounded
-            icon-pack="fas"
-            icon-left="angle-left"
-            @click="previousPage"
-            :disabled="previousContinuationTokens.length === 0"
-            >
-          </b-button>
-          <b-button
-            type="is-primary" rounded
-            icon-pack="fas"
-            icon-right="angle-right"
-            @click="nextPage"
-            :disabled="!nextContinuationToken"
-            >
-          </b-button>
-        </div>
+
       </div>
 
       <!-- Content Table -->
