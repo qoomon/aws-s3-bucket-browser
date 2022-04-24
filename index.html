@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.8.4 -->
+<!-- S3 Bucket Explorer Version: 1.9.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -41,13 +41,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link id="favicon" rel="shortcut icon" />
+
   <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js" integrity="sha384-ULpZhk1pvhc/UK5ktA9kwb2guy9ovNSTyxPNHANnA35YjBQgdwI+AhLkixDvdlw4" crossorigin="anonymous"></script>
   <script>Vue.config.productionTip = false;</script>
   <style>[v-cloak] {display: none}</style>
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css" integrity="sha384-rJzKgf2UUnpzXvYOutlTiL8YYlEwrfhBmJI+ymqTQ67Dw3qJJeHA76pmK2IaTjuD" crossorigin="anonymous">
-  <script src="https://unpkg.com/buefy@0.9.10/dist/buefy.min.js" integrity="sha384-T58J1OGlL1z5XNzGTewXlzY/GUx9W3Nw7jUux1EJSA11VzG7YVKuzRTKo/lo/xRc" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.10/dist/buefy.min.css" integrity="sha384-QtNuB2V0zXqYlM3LrzVmFc4U2pjfGzRfZbANB/BodC/oDS6aMw7CoDl4Me3X6UQS" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.8.55/css/materialdesignicons.min.css" integrity="sha384-mXn03l3egUmSn2pZYz33om5XpEK6GclFj/DZp48zhus7gXuJlYs806Zpmhgy9MKb" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.1.1/css/all.css" integrity="sha384-/frq1SRXYH/bSyou/HUp/hib7RVN1TawQYja658FEOodR/FQBKVqT9Ol+Oz3Olq5" crossorigin="anonymous">
+  <script src="https://unpkg.com/buefy@0.9.20/dist/buefy.min.js" integrity="sha384-J9o3RORmJhOZllvo14aPtzAeqyZjQ2TXL/ufXY1QYXc2RMuH72o0je0H+X6XBRi/" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.20/dist/buefy.min.css" integrity="sha384-QIdDkCURVg1BoIxyipzY5/NWEYfyx1pn30/Hmrbs12sHMf5XCrE2eWfQ2yafeoBy" crossorigin="anonymous">
   <script src="https://unpkg.com/moment@2.29.1/min/moment.min.js" integrity="sha384-Uz1UHyakAAz121kPY0Nx6ZGzYeUTy9zAtcpdwVmFCEwiTGPA2K6zSGgkKJEQfMhK" crossorigin="anonymous"></script>
 </head>
 
@@ -70,20 +72,38 @@
       <!-- Navigation Bar -->
       <div class="container is-clearfix">
         <!-- Prefix Breadcrumps -->
-        <div class="buttons is-pulled-left">
+        <div class="buttons is-pulled-left" style="width: 100%;">
           <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
             type="is-primary" rounded
             tag="a"
             :href="breadcrump.url"
-            icon-pack="fas"
-            :icon-left="index == 0 ? 'folder' : ''"
             target=""
+            icon-pack="fa"
+            :icon-left="index == 0 ? 'bucket': ''"
             :style="{ fontWeight: index == 0 ? 'bolder': ''}"
             style="white-space: pre;"
             >
-            <template>{{index > 0 ? breadcrump.name : '/'}}</template>
+            <template v-if="index > 0">{{ breadcrump.name }}</template>
           </b-button>
+          <!-- Prefix Search Input -->
+          <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
+              :class="searchPrefix && pathPrefix.replace(/^.*\//,'') === searchPrefix ? 'search-prefix-matches-path-prefix' : ''"
+              style="flex: auto;">
+              <b-input
+                  rounded
+                  v-model="searchPrefix"
+                  placeholder="search by prefix"
+                  icon="magnify"
+                  icon-clickable
+                  @icon-click="searchByPrefix"
+                  icon-right="close-circle"
+                  icon-right-clickable
+                  @icon-right-click="searchPrefix = ''; searchByPrefix()"
+                  @keyup.enter.native="searchByPrefix">
+              </b-input>
+          </b-field>
         </div>
+
         <!-- Paginating Buttons -->
         <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
           class="buttons is-pulled-right">
@@ -339,6 +359,7 @@
       data: {
         config, // defined in <head> section
         pathPrefix: '',
+        searchPrefix: '',
         pathContentTableData: [],
 
         previousContinuationTokens: [],
@@ -354,8 +375,7 @@
           }
         },
         pathBreadcrumps() {
-          //TODO
-          return `/${this.pathPrefix}`.match(/(?=[/])|[^/]+[/]?/g)
+          return ['', ...(this.pathPrefix.match(/[^/]*\//g) || [])]
             .map((pathPrefixPart, index, pathPrefixParts) => ({
               name: decodeURI(pathPrefixPart),
               url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
@@ -373,11 +393,25 @@
           this.previousContinuationTokens = []
           this.continuationToken = undefined
           this.nextContinuationToken = undefined
+          this.searchPrefix = this.pathPrefix.replace(/^.*\//, '')
+          window.location.hash = this.pathPrefix
           this.refresh()
         }
       },
       methods: {
         moment,
+        validBucketPrefix(prefix) {
+          if(prefix === '') return true
+          if(prefix.includes('//')) return false
+          if(prefix.startsWith('/') && this.bucketPrefix.includes('/')) return false
+          return true
+        },
+        searchByPrefix() {
+          if(this.validBucketPrefix(this.searchPrefix)){
+              const pathPrefixDir = this.pathPrefix.replace(/[^/]*$/, '')
+              this.pathPrefix = pathPrefixDir + this.searchPrefix
+          }
+        },
         previousPage() {
           if (this.previousContinuationTokens.length > 0) {
             this.continuationToken = this.previousContinuationTokens.pop()
@@ -531,7 +565,7 @@
         }
       },
       async mounted() {
-        window.onpopstate = () => this.pathPrefix = window.location.hash.replace(/^#\/?/, '')
+        window.onpopstate = () => this.pathPrefix = window.location.hash.replace(/^#/, '')
         window.onpopstate()
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth
@@ -555,6 +589,9 @@
       overflow-y: auto;
     }
 
+    .buttons .field {
+      margin-bottom: 0.5rem;
+    }
     .button.is-primary {
       background-color: var(--primary-color) !important;
     }
@@ -563,7 +600,6 @@
       border-color: var(--primary-color) !important;
       color: var(--primary-color) !important;
     }
-
     .button.is-text {
       padding: 0 !important;
       height: auto !important;
@@ -574,8 +610,22 @@
       color: var(--primary-color) !important;
       font-weight: 500;
     }
-    .button.is-text:focus {
+
+    .search-prefix-matches-path-prefix input.input {
+      color: var(--primary-color) !important;
       font-weight: bold;
+    }
+
+    .button.is-primary:focus:not(:active) {
+      box-shadow: inset 0px 0px 0px 0.1em #ffffffcc;
+    }
+    .input:focus:not(.is-danger),
+    .select select:focus {
+      border-color: var(--primary-color);
+      box-shadow: none;
+    }
+    .select:not(.is-multiple):not(.is-loading)::after {
+        border-color: var(--primary-color) !important;
     }
 
     .name-column-icon {
