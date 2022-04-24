@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.9.0 -->
+<!-- S3 Bucket Explorer Version: 1.9.1 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -402,6 +402,7 @@
         moment,
         validBucketPrefix(prefix) {
           if(prefix === '') return true
+          if(prefix.startsWith(' ') || prefix.endsWith(' ')) return false
           if(prefix.includes('//')) return false
           if(prefix.startsWith('/') && this.bucketPrefix.includes('/')) return false
           return true
@@ -565,7 +566,7 @@
         }
       },
       async mounted() {
-        window.onpopstate = () => this.pathPrefix = window.location.hash.replace(/^#/, '')
+        window.onpopstate = () => this.pathPrefix = decodeURIComponent(window.location.hash).replace(/^#/, '')
         window.onpopstate()
         window.addEventListener('resize', () => {
           this.windowWidth = window.innerWidth
