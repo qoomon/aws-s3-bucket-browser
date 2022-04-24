@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.9.2 -->
+<!-- S3 Bucket Explorer Version: 1.10.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -97,7 +97,7 @@
                     icon="magnify"
                     icon-clickable
                     @icon-click="searchByPrefix"
-                    icon-right="close-circle"
+                    :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
                     icon-right-clickable
                     @icon-right-click="searchPrefix = ''; searchByPrefix()"
                     @keyup.enter.native="searchByPrefix">
