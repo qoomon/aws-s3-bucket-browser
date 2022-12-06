@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.10.1 -->
+<!-- S3 Bucket Explorer Version: 1.11.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -51,135 +51,187 @@
   <script src="https://unpkg.com/buefy@0.9.20/dist/buefy.min.js" integrity="sha384-J9o3RORmJhOZllvo14aPtzAeqyZjQ2TXL/ufXY1QYXc2RMuH72o0je0H+X6XBRi/" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.20/dist/buefy.min.css" integrity="sha384-QIdDkCURVg1BoIxyipzY5/NWEYfyx1pn30/Hmrbs12sHMf5XCrE2eWfQ2yafeoBy" crossorigin="anonymous">
   <script src="https://unpkg.com/moment@2.29.1/min/moment.min.js" integrity="sha384-Uz1UHyakAAz121kPY0Nx6ZGzYeUTy9zAtcpdwVmFCEwiTGPA2K6zSGgkKJEQfMhK" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/gh/zerodevx/zero-md@2/dist/zero-md.min.js" type="module" integrity="sha384-f1ug+gSCwOxVLXGxfgjh0OxlJ5Q+r2BDQ56U7+BFP/TqwOULHy5f8eilkWTz62AE" crossorigin="anonymous"></script>
 </head>
 
 <body >
   <div id="app" v-cloak :style="cssVars">
-    <!-- Header -->
-    <div class="level">
-      <div class="level-left" style="display: flex;">
-        <figure class="level-item image is-96x96" style="margin-right: 1.5rem;">
-          <img :src="config.logo" />
-        </figure>
-        <div>
-          <h1 class="title">{{config.title}}</h1>
-          <h2 class="subtitle">{{config.subtitle}}</h2>
+
+    <!-- Markdown Renderer -->
+    <zero-md v-if="pathPrefix.endsWith(':markdown')"
+      :src="urlFromPathPrefix(bucketPrefix.replace(/:markdown$/,''))">
+    </zero-md>
+
+    <!-- Main Explorer -->
+    <template v-else>
+      <!-- Header -->
+      <div class="level">
+        <div class="level-left" style="display: flex;">
+          <figure class="level-item image is-96x96" style="margin-right: 1.5rem;">
+            <img :src="config.logo" />
+          </figure>
+          <div>
+            <h1 class="title">{{config.title}}</h1>
+            <h2 class="subtitle">{{config.subtitle}}</h2>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="container">
-      <!-- Navigation Bar -->
-      <div class="container is-clearfix" style="margin-bottom: 1rem;">
-        <!-- Prefix Breadcrumps -->
-        <div class="buttons is-pulled-left" style="width: 100%;">
-          <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
-            type="is-primary" rounded
-            tag="a"
-            :href="breadcrump.url"
-            target=""
-            icon-pack="fa"
-            :icon-left="index == 0 ? 'bucket': ''"
-            :style="{ fontWeight: index == 0 ? 'bolder': ''}"
-            style="white-space: pre;"
-            >
-            <template v-if="index > 0">{{ breadcrump.name }}</template>
-          </b-button>
-          <div class="container" style="display: flex;">
-            <!-- Prefix Search Input -->
-            <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
-                :class="searchPrefix && pathPrefix.replace(/^.*\//,'') === searchPrefix ? 'search-prefix-matches-path-prefix' : ''"
-                style="flex: auto;">
-                <b-input
-                    rounded
-                    v-model="searchPrefix"
-                    placeholder="search by prefix"
-                    icon="magnify"
-                    icon-clickable
-                    @icon-click="searchByPrefix"
-                    :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
-                    icon-right-clickable
-                    @icon-right-click="searchPrefix = ''; searchByPrefix()"
-                    @keyup.enter.native="searchByPrefix">
-                </b-input>
-            </b-field>
+      <div class="container">
+        <!-- Navigation Bar -->
+        <div class="container is-clearfix" style="margin-bottom: 1rem;">
+          <!-- Prefix Breadcrumps -->
+          <div class="buttons is-pulled-left" style="width: 100%;">
+            <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
+              type="is-primary" rounded
+              tag="a"
+              :href="breadcrump.url"
+              target=""
+              icon-pack="fa"
+              :icon-left="index == 0 ? 'bucket': ''"
+              :style="{ fontWeight: index == 0 ? 'bolder': ''}"
+              style="white-space: pre;"
+              >
+              <template v-if="index > 0">{{ breadcrump.name }}</template>
+            </b-button>
+            <div class="container" style="display: flex;">
+              <!-- Prefix Search Input -->
+              <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
+                  :class="searchPrefix && pathPrefix.replace(/^.*\//,'') === searchPrefix ? 'search-prefix-matches-path-prefix' : ''"
+                  style="flex: auto;">
+                  <b-input
+                      rounded
+                      v-model="searchPrefix"
+                      placeholder="search by prefix"
+                      icon="magnify"
+                      icon-clickable
+                      @icon-click="searchByPrefix"
+                      :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
+                      icon-right-clickable
+                      @icon-right-click="searchPrefix = ''; searchByPrefix()"
+                      @keyup.enter.native="searchByPrefix">
+                  </b-input>
+              </b-field>
 
-            <!-- Paginating Buttons -->
-            <div class="container" v-show="nextContinuationToken || previousContinuationTokens.length > 0"
-              style="display: contents;">
-              <b-button
-                type="is-primary" rounded
-                icon-pack="fas"
-                icon-left="angle-left"
-                @click="previousPage"
-                :disabled="previousContinuationTokens.length === 0"
-                style="margin-left: 2rem;">
-              </b-button>
-              <b-button
-                type="is-primary" rounded
-                icon-pack="fas"
-                icon-right="angle-right"
-                @click="nextPage"
-                :disabled="!nextContinuationToken"
-                >
-              </b-button>
+              <!-- Paginating Buttons -->
+              <div class="container" v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+                style="display: contents;">
+                <b-button
+                  type="is-primary" rounded
+                  icon-pack="fas"
+                  icon-left="angle-left"
+                  @click="previousPage"
+                  :disabled="previousContinuationTokens.length === 0"
+                  style="margin-left: 2rem;">
+                </b-button>
+                <b-button
+                  type="is-primary" rounded
+                  icon-pack="fas"
+                  icon-right="angle-right"
+                  @click="nextPage"
+                  :disabled="!nextContinuationToken"
+                  >
+                </b-button>
+              </div>
             </div>
           </div>
         </div>
 
-
-      </div>
-
-      <!-- Content Table -->
-      <b-table
-        :data="pathContentTableData"
-        :default-sort="config.defaultOrder.split('-')[0]"
-        :default-sort-direction="config.defaultOrder.split('-')[1]"
-        :mobile-cards="true"
-        >
-        <b-table-column
-          v-slot="props"
-          field="name"
-          label="Name"
-          sortable :custom-sort="sortTableData('name')"
-          cell-class="name-column"
+        <!-- Content Table -->
+        <b-table
+          :data="pathContentTableData"
+          :default-sort="config.defaultOrder.split('-')[0]"
+          :default-sort-direction="config.defaultOrder.split('-')[1]"
+          :mobile-cards="true"
           >
-          <div style="display: flex; align-items: center;">
-            <b-icon
-              pack="far"
-              :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
-              class="name-column-icon"
-              >
-            </b-icon>
-            <div style="text-align: left;">
+          <b-table-column
+            v-slot="props"
+            field="name"
+            label="Name"
+            sortable :custom-sort="sortTableData('name')"
+            cell-class="name-column"
+            >
+            <div style="display: flex; align-items: center; min-width: calc(100% - 5.5rem);">
+              <b-icon
+                pack="far"
+                :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
+                class="name-column-icon"
+                style="text-align: left;"
+                >
+              </b-icon>
+
               <b-button
                 type="is-text" rounded
                 tag="a"
                 :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"
                 @click="document.activeElement.blur()"
-                style="text-align: left; white-space: pre-wrap;"
                 >
                 <template>{{ props.row.name }}</template>
               </b-button>
-              <br>
-              <b-button
-                v-if="props.row.installUrl"
-                type="is-primary" rounded outlined
-                tag="a"
-                :href="props.row.installUrl"
-                class="name-column-install-button"
-                >
-                Install
-              </b-button>
+
+              <div class="name-column-buttons">
+                <!-- Markdown Preview Button -->
+                <b-button
+                  v-if="props.row.type === 'content' && props.row.name.endsWith('.md')"
+                  type="is-text"
+                  tag="a"
+                  :href="`#${pathPrefix + props.row.name}:markdown`"
+                  icon-left="image" size="is-medium"
+                  target="_blank"
+                ></b-button>
+
+                <!-- Install Button -->
+                <b-button
+                  v-if="props.row.installUrl"
+                  type="is-primary" rounded outlined
+                  tag="a"
+                  :href="props.row.installUrl"
+                  >Install</b-button>
+              </div>
             </div>
-          </div>
 
-          <div
-            v-if="cardView && (props.row.size || props.row.dateModified)"
-            class="name-column-details"
+            <div
+              v-if="cardView && (props.row.size || props.row.dateModified)"
+              class="name-column-details"
+              >
+              <div>{{ formatBytes(props.row.size) }}</div>
+
+              <b-tooltip
+                :active="!!props.row.dateModified"
+                type="is-light"
+                size="is-small"
+                position="is-left"
+                animated
+                multilined
+                >
+                <div>{{ formatDateTime_relative(props.row.dateModified) }}</div>
+                <template v-slot:content>
+                  <span>{{ formatDateTime_date(props.row.dateModified) }}</span>
+                  <br>
+                  <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
+                </template>
+              </b-tooltip>
+
+            </div>
+          </b-table-column>
+          <b-table-column
+            v-slot="props"
+            field="size" numeric
+            label="Size"
+            sortable :custom-sort="sortTableData('size')"
+            right width="128"
+            cell-class="size-column"
             >
-            <div>{{ formatBytes(props.row.size) }}</div>
-
+            {{ formatBytes(props.row.size) }}
+          </b-table-column>
+          <b-table-column
+            v-slot="props"
+            field="dateModified"
+            label="Date Modified"
+            sortable :custom-sort="sortTableData('dateModified')"
+            centered width="256"
+            cell-class="modified-column"
+            >
             <b-tooltip
               :active="!!props.row.dateModified"
               type="is-light"
@@ -195,73 +247,38 @@
                 <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
               </template>
             </b-tooltip>
+          </b-table-column>
+        </b-table>
 
+        <!-- Paginating Buttons -->
+        <div class="container is-clearfix" style="margin-top: 1rem;">
+          <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+            class="buttons is-pulled-right">
+            <b-button
+              type="is-primary" rounded
+              icon-pack="fas"
+              icon-left="angle-left"
+              @click="previousPage"
+              :disabled="previousContinuationTokens.length === 0"
+              >
+            </b-button>
+            <b-button
+              type="is-primary" rounded
+              icon-pack="fas"
+              icon-right="angle-right"
+              @click="nextPage"
+              :disabled="!nextContinuationToken"
+              >
+            </b-button>
           </div>
-        </b-table-column>
-        <b-table-column
-          v-slot="props"
-          field="size" numeric
-          label="Size"
-          sortable :custom-sort="sortTableData('size')"
-          centered width="128"
-          cell-class="size-column"
-          >
-          {{ formatBytes(props.row.size) }}
-        </b-table-column>
-        <b-table-column
-          v-slot="props"
-          field="dateModified"
-          label="Date Modified"
-          sortable :custom-sort="sortTableData('dateModified')"
-          centered width="256"
-          cell-class="modified-column"
-          >
-          <b-tooltip
-            :active="!!props.row.dateModified"
-            type="is-light"
-            size="is-small"
-            position="is-left"
-            animated
-            multilined
-            >
-            <div>{{ formatDateTime_relative(props.row.dateModified) }}</div>
-            <template v-slot:content>
-              <span>{{ formatDateTime_date(props.row.dateModified) }}</span>
-              <br>
-              <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
-            </template>
-          </b-tooltip>
-        </b-table-column>
-      </b-table>
-
-      <!-- Paginating Buttons -->
-      <div class="container is-clearfix" style="margin-top: 1rem;">
-        <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
-          class="buttons is-pulled-right">
-          <b-button
-            type="is-primary" rounded
-            icon-pack="fas"
-            icon-left="angle-left"
-            @click="previousPage"
-            :disabled="previousContinuationTokens.length === 0"
-            >
-          </b-button>
-          <b-button
-            type="is-primary" rounded
-            icon-pack="fas"
-            icon-right="angle-right"
-            @click="nextPage"
-            :disabled="!nextContinuationToken"
-            >
-          </b-button>
         </div>
       </div>
-    </div>
 
-    <!-- Footer -->
-    <div class="footer-bucket-url">
-      <a :href="`${config.bucketUrl}?prefix=${bucketPrefix}`">Bucket: {{ config.bucketUrl }}</a>
-    </div>
+      <!-- Footer -->
+      <div class="footer-bucket-url">
+        <a :href="`${config.bucketUrl}?prefix=${bucketPrefix}`">Bucket: {{ config.bucketUrl }}</a>
+      </div>
+    </template>
   </div>
   <!-- GitHub Corner -->
   <a href="https://github.com/qoomon/aws-s3-bucket-browser" class="github-corner" aria-label="View source on GitHub">
@@ -404,6 +421,9 @@
       },
       methods: {
         moment,
+        urlFromPathPrefix(pathPrefix) {
+          return `${(this.config.bucketMaskUrl || this.config.bucketUrl).replace(/\/*$/,'')}/${encodeURI(pathPrefix)}`
+        },
         validBucketPrefix(prefix) {
           if(prefix === '') return true
           if(prefix.startsWith(' ') || prefix.endsWith(' ')) return false
@@ -614,6 +634,7 @@
       user-select: text !important;
       color: var(--primary-color) !important;
       font-weight: 500;
+      text-align: left;
     }
 
     .search-prefix-matches-path-prefix input.input {
@@ -635,17 +656,20 @@
 
     .name-column-icon {
       display: block;
-      text-align: left;
       flex-basis: 1.5rem;
       flex-grow: 0;
       flex-shrink: 0;"
     }
 
-    .name-column-install-button {
-      height: 0;
-      padding: 0.6rem;
-      margin-top: 0.4rem;
-      font-size: 0.8rem;
+    .name-column-buttons {
+      display: flex;
+      margin-left: auto;
+    }
+    .name-column-buttons > .button {
+      height: 1em;
+      height: auto;
+      padding: 0em 0.6em;
+      margin-left: 0.5em;
     }
 
     .name-column-details {
