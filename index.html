@@ -422,7 +422,7 @@
       methods: {
         moment,
         urlFromPathPrefix(pathPrefix) {
-          return `${(this.config.bucketMaskUrl || this.config.bucketUrl).replace(/\/*$/,'')}/${encodeURI(pathPrefix)}`
+          return `${(this.config.bucketMaskUrl || this.config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(pathPrefix)}`
         },
         validBucketPrefix(prefix) {
           if(prefix === '') return true
@@ -516,7 +516,7 @@
                 }
               }
 
-              let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURI(content.key)}`
+              let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(content.key)}`
               let installUrl = undefined
               if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
                 // generate manifest.plist install urls
