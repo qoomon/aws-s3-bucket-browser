@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.11.1 -->
+<!-- S3 Bucket Explorer Version: 1.11.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -328,12 +328,12 @@
     if (!match) {
       type = 'AWS'
       // check for urls like http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
-      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com/)
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com/)
     }
     if (!match) {
       type = 'AWS'
       // check for urls like http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
-      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com/)
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com/)
     }
      if (!match) {
       type = 'GCP'
@@ -343,7 +343,7 @@
     if (!match) {
       type = 'IBM'
       // check for urls like http://example-bucket.s3-web.us-south.cloud-object-storage.appdomain.cloud/index.html
-      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>[^.]+)\.s3-web\.(?<region>[^.]+)\.cloud-object-storage\.appdomain\.cloud/)
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-web\.(?<region>[^.]+)\.cloud-object-storage\.appdomain\.cloud/)
     }
 
     if (match) {
