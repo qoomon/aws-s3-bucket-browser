@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.11.3 -->
+<!-- S3 Bucket Explorer Version: 1.11.4 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -151,7 +151,7 @@
             sortable :custom-sort="sortTableData('name')"
             cell-class="name-column"
             >
-            <div style="display: flex; align-items: center; min-width: calc(100% - 5.5rem);">
+            <div>
               <b-icon
                 pack="far"
                 :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
@@ -613,6 +613,10 @@
       background-color: #f5f5f5;
       overflow-y: auto;
     }
+    
+    .table {
+        table-layout: fixed;
+    }
 
     .buttons .field {
       margin-bottom: 0.5rem;
@@ -635,6 +639,11 @@
       color: var(--primary-color) !important;
       font-weight: 500;
       text-align: left;
+      overflow: hidden;
+    }
+    .button.is-text > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .search-prefix-matches-path-prefix input.input {
@@ -654,6 +663,11 @@
         border-color: var(--primary-color) !important;
     }
 
+    .name-column > div:first-child {
+        display: flex; 
+        align-items: center; 
+    }
+    
     .name-column-icon {
       display: block;
       flex-basis: 1.5rem;
@@ -701,6 +715,9 @@
       .name-column::before {
         display: none !important;
       }
+      .name-column > div:first-child {
+        max-width: calc(100% - 5.5rem);
+      }
 
       .size-column,
       .modified-column {
@@ -711,4 +728,3 @@
 </body>
 
 </html>
-
