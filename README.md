@@ -129,6 +129,3 @@ in this [tutorial](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-o
   </CORSRule>
 </CORSConfiguration>
 ```
-
-A example deployment is available [here](https://s3-bucket-browser-demo.s3-web.us-south.cloud-object-storage.appdomain.cloud/).
-
