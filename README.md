@@ -5,7 +5,7 @@ Single HTML file to browse AWS S3 buckets
 ## [Demo](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.amazonaws.com/spacenet-dataset#spacenet/)
 
 ## Features
-* Render for Makrdown files
+* Render preview for Makrdown files
 * Show `Install` button for `manifest.plist` on iOS devices
 
 ## Installation
