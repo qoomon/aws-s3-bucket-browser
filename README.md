@@ -46,7 +46,7 @@ Single HTML file to browse AWS S3 buckets
       defaultOrder: 'name-asc' // (name|size|dateModified)-(asc|desc)
     }
     ```
-* ⚠️ Ensure following `Bucket Permissions`
+* ##### ⚠️ Ensure Bucket Permissions
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
   * Grant public read permission by `Access Control List` or `Bucket Policy`
     * Access Control List
@@ -72,7 +72,8 @@ Single HTML file to browse AWS S3 buckets
           ]
       }
       ```
-* ⚠️ Depending on your setup you may need need to ensure following Bucket `CORS Configuration`
+* ##### ⚠️ Ensure Bucket CORS
+  * Depending on your setup you may need need to ensure following `CORS Configuration`
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
   * Grant Cross Origin Access by following `CORS Configuration`, replace `http://www.example.com` by your address of bucket browser `index.html` 
     * e.g `http://example.s3-website-eu-central-1.amazonaws.com/index.html`
@@ -100,11 +101,11 @@ Single HTML file to browse AWS S3 buckets
 * Open `<YOUR BUCKET URL>/index.html` in your browser.
 
 #### Hosted
-* ⚠️ Ensure following Bucket Permissions
+* ##### ⚠️ Ensure Bucket Permissions
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
   * Grant `Bucket Permissions`
     * see [Self-Hosted](#self-hosted)
-  * Grant Cross Origin Access by `CORS Configuration`
+  * Grant Cross Origin Access by CORS setup
     * see [Self-Hosted](#self-hosted)
 * Open hosted `index.html` in your browser and provide bucket url as `bucket` request parameter
   * `${INDEX_FILE_LOCATION}?bucket=${S3_BUCKET_URL}` 
