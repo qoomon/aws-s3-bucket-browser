@@ -102,11 +102,9 @@ Single HTML file to browse AWS S3 buckets
 
 #### Hosted
 * ##### ⚠️ Ensure Bucket Permissions
-  * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
-  * Grant `Bucket Permissions`
-    * see [Self-Hosted](#self-hosted)
-  * Grant Cross Origin Access by CORS setup
-    * see [Self-Hosted](#self-hosted)
+  * see [Self-Hosted](#self-hosted)
+* ##### ⚠️ Ensure Bucket CORS
+  * see [Self-Hosted](#self-hosted)
 * Open hosted `index.html` in your browser and provide bucket url as `bucket` request parameter
   * `${INDEX_FILE_LOCATION}?bucket=${S3_BUCKET_URL}` 
   * e.g. [`https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org`](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)
