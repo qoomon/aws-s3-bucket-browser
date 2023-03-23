@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.11.6 -->
+<!-- S3 Bucket Explorer Version: 1.12.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -7,7 +7,7 @@
   <script>
     const config = {
       title: 'Bucket Browser',
-      subtitle: 'made with ♥ by qoomon',
+      subtitle: 'HTML> made with ♥ by <b><a href="https://qoo.monster" style="color: #167df0;">qoomon</a></b>',
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
       primaryColor: '#167df0',
@@ -72,7 +72,7 @@
           </figure>
           <div>
             <h1 class="title">{{config.title}}</h1>
-            <h2 class="subtitle">{{config.subtitle}}</h2>
+            <h2 class="subtitle" v-html="config.subtitleHTML"></h2>
           </div>
         </div>
       </div>
@@ -308,6 +308,26 @@
   <!-- Main Script -->
 
   <script>
+    const htmlPrefixRegex = /^HTML> ?/i
+    if(config.title) {
+        if(config.title.match(htmlPrefixRegex)){
+            config.subtitleHTML = config.title.replace(htmlPrefixRegex,'')
+        } else {
+            let template = document.createElement('span')
+            template.innerText = config.title
+            config.subtitleHTML = template.outerHTML
+        }
+    }
+    if(config.subtitle) {
+        if(config.subtitle.match(htmlPrefixRegex)){
+            config.subtitleHTML = config.subtitle.replace(htmlPrefixRegex,'')
+        } else {
+            let template = document.createElement('span')
+            template.innerText = config.subtitle
+            config.subtitleHTML = template.outerHTML
+        }
+    }
+
     if (!config.bucketUrl) {
       // try get bucket url by request parameter
       config.bucketUrl = new URL(window.location).searchParams.get('bucket')
