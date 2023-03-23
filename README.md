@@ -17,8 +17,8 @@ Single HTML file to browse AWS S3 buckets
   * Adjust [config](index.html#L8-L37) within `index.html` if needed, e.g.
     ```js
     const config = {
-      title: 'Bucket Browser',
-      subtitle: 'made with ♥ by qoomon',
+      title: 'Bucket Browser', // prefix value with `HTML> ` to render html value
+      subtitle: 'made with ♥ by qoomon', // prefix value with `HTML> ` to render html value
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
       primaryColor: '#167df0',
