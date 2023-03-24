@@ -17,8 +17,8 @@ Single HTML file to browse AWS S3 buckets
   * Adjust [config](index.html#L8-L37) within `index.html` if needed, e.g.
     ```js
     const config = {
-      title: 'Bucket Browser', // prefix value with `HTML> ` to render html value
-      subtitle: 'made with ♥ by qoomon', // prefix value with `HTML> ` to render html value
+      title: 'Bucket Browser', // prefix value with `HTML> ` to render as html, see subtitle
+      subtitle: 'HTML>made with ♥ by <b><a href="https://qoo.monster">qoomon</a></b>', // prefix value with `HTML> ` to render as html
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
       primaryColor: '#167df0',
@@ -35,7 +35,7 @@ Single HTML file to browse AWS S3 buckets
       //   * https://storage.googleapis.com/BUCKET-NAME
       //   The URL should return an XML document with <ListBucketResult> as root element.
       rootPrefix: undefined, // e.g. 'subfolder/'
-      keyExcludePatterns: [/^index\.html$/],
+      keyExcludePatterns: [/^index\.html$/], // matches againt object key relative to rootPrefix
       pageSize: 50,
       
       bucketMaskUrl: undefined, 
