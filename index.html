@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 1.12.1 -->
+<!-- S3 Bucket Explorer Version: 2.0.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -6,8 +6,8 @@
 <head>
   <script>
     const config = {
-      title: 'Bucket Browser', // prefix value with `HTML> ` to render html value, see subtitle
-      subtitle: 'HTML> made with ♥ by <b><a href="https://qoo.monster" style="color: #167df0;">qoomon</a></b>',
+      title: 'Bucket Browser',
+      subtitle: 'HTML>made with ♥ by <b><a href="https://qoo.monster">qoomon</a></b>',
       logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
       favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
       primaryColor: '#167df0',
@@ -24,7 +24,7 @@
       //   * https://storage.googleapis.com/BUCKET-NAME
       //   The URL should return an XML document with <ListBucketResult> as root element.
       rootPrefix: undefined, // e.g. 'subfolder/'
-      keyExcludePatterns: [/^index\.html$/],
+      keyExcludePatterns: [/^index\.html$/, /^Urban_3D_Challenge\//], // matches againt object key relative to rootPrefix
       pageSize: 50,
 
       bucketMaskUrl: undefined,
@@ -58,8 +58,8 @@
   <div id="app" v-cloak :style="cssVars">
 
     <!-- Markdown Renderer -->
-    <zero-md v-if="pathPrefix.endsWith(':markdown')"
-      :src="urlFromPathPrefix(bucketPrefix.replace(/:markdown$/,''))">
+    <zero-md v-if="pathPrefix.endsWith('::markdown')"
+      :src="urlFromPathPrefix(bucketPrefix.replace(/::markdown$/,''))">
     </zero-md>
 
     <!-- Main Explorer -->
@@ -71,7 +71,7 @@
             <img :src="config.logo" />
           </figure>
           <div>
-            <h1 class="title">{{config.title}}</h1>
+            <h1 class="title" v-html="config.titleHTML"></h1>
             <h2 class="subtitle" v-html="config.subtitleHTML"></h2>
           </div>
         </div>
@@ -175,7 +175,7 @@
                   v-if="props.row.type === 'content' && props.row.name.endsWith('.md')"
                   type="is-text"
                   tag="a"
-                  :href="`#${pathPrefix + props.row.name}:markdown`"
+                  :href="`#${pathPrefix + props.row.name}::markdown`"
                   icon-left="image" size="is-medium"
                   target="_blank"
                 ></b-button>
@@ -287,15 +287,15 @@
   </a>
 
   <script>
-    function escapeRegExp(text) {
-      // $& means the whole matched string
-      return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    String.prototype.removePrefix = function (prefix) {
+      if (!this.startsWith(prefix)) return this
+      return this.substring(prefix.length)
     }
 
-    function escapeHTML(text) {
-      let div = document.createElement('div')
-      div.innerText = text
-      return div.innerHTML
+    String.prototype.escapeHTML = function () {
+      const template = document.createElement('span')
+      template.innerText = this
+      return template.innerHTML
     }
 
     function devicePlatform_iOS() {
@@ -308,24 +308,14 @@
   <!-- Main Script -->
 
   <script>
-    const htmlPrefixRegex = /^HTML> ?/i
-    if(config.title) {
-        if(config.title.match(htmlPrefixRegex)){
-            config.subtitleHTML = config.title.replace(htmlPrefixRegex,'')
-        } else {
-            let template = document.createElement('span')
-            template.innerText = config.title
-            config.subtitleHTML = template.outerHTML
-        }
+    const htmlPrefix = 'HTML>'
+    if (config.title) {
+      if(config.title.startsWith(htmlPrefix)) config.titleHTML = config.title.removePrefix(htmlPrefix)
+      else config.titleHTML  = config.title.escapeHTML()
     }
-    if(config.subtitle) {
-        if(config.subtitle.match(htmlPrefixRegex)){
-            config.subtitleHTML = config.subtitle.replace(htmlPrefixRegex,'')
-        } else {
-            let template = document.createElement('span')
-            template.innerText = config.subtitle
-            config.subtitleHTML = template.outerHTML
-        }
+    if (config.subtitle) {
+      if(config.subtitle.startsWith(htmlPrefix)) config.subtitleHTML = config.subtitle.removePrefix(htmlPrefix)
+      else config.subtitleHTML = config.subtitle.escapeHTML()
     }
 
     if (!config.bucketUrl) {
@@ -496,7 +486,7 @@
             }
           } catch (error) {
             this.$buefy.notification.open({
-              message: escapeHTML(error.message),
+              message: error.message?.escapeHTML(),
               type: 'is-danger',
               duration: 60000,
               position: 'is-bottom'
@@ -509,10 +499,9 @@
 
           let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")]
             .map(tag => ({
-              prefix: tag.querySelector('Prefix').textContent
-                .replace(RegExp(`^${escapeRegExp(config.rootPrefix)}`), '')
+              prefix: tag.querySelector('Prefix').textContent.removePrefix(config.rootPrefix)
             }))
-            .filter(prefix => !config.keyExcludePatterns.find(pattern => pattern.test(prefix.prefix)))
+            .filter(prefix => !config.keyExcludePatterns.find(pattern => pattern.test(prefix.prefix.removePrefix(config.rootPrefix))))
             .map(prefix => ({
               type: 'prefix',
               name: prefix.prefix.split('/').slice(-2)[0] + '/',
@@ -526,7 +515,7 @@
               dateModified: new Date(tag.querySelector('LastModified').textContent)
             }))
             .filter(content => content.key !== decodeURI(this.bucketPrefix))
-            .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key)))
+            .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key.removePrefix(config.rootPrefix))))
             .map(content => {
               if (content.key.endsWith('/') && !content.size) {
                 return {
