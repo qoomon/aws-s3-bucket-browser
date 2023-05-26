@@ -27,6 +27,12 @@
       keyExcludePatterns: [/^index\.html$/, /^Urban_3D_Challenge\//], // matches againt object key relative to rootPrefix
       pageSize: 50,
 
+      // Whether or not users can download all the files in a folder
+      allowDownloadAll: true,
+
+      // Whether or not users can download individual files
+      allowDownload: true,
+
       bucketMaskUrl: undefined,
       // If bucketMaskUrl is set, file urls will be changed from ${bucketUrl}/${file} to ${bucketMaskUrl}/${file}
       //   bucketMaskUrl: 'https://example.org'
@@ -46,6 +52,7 @@
   <script>Vue.config.productionTip = false;</script>
   <style>[v-cloak] {display: none}</style>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.8.55/css/materialdesignicons.min.css" integrity="sha384-mXn03l3egUmSn2pZYz33om5XpEK6GclFj/DZp48zhus7gXuJlYs806Zpmhgy9MKb" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.1.1/css/all.css" integrity="sha384-/frq1SRXYH/bSyou/HUp/hib7RVN1TawQYja658FEOodR/FQBKVqT9Ol+Oz3Olq5" crossorigin="anonymous">
   <script src="https://unpkg.com/buefy@0.9.20/dist/buefy.min.js" integrity="sha384-J9o3RORmJhOZllvo14aPtzAeqyZjQ2TXL/ufXY1QYXc2RMuH72o0je0H+X6XBRi/" crossorigin="anonymous"></script>
@@ -112,6 +119,17 @@
                       @keyup.enter.native="searchByPrefix">
                   </b-input>
               </b-field>
+
+              <!-- Download All Button -->
+              <b-button
+                v-if="config.allowDownloadAll && pathContentTableData.some(item => item.type === 'content')"
+                type="is-primary"
+                icon-pack="fas"
+                icon-left="download"
+                @click="downloadAllS3Items"
+                style="margin-left: 2rem;">
+                Download All
+              </b-button>
 
               <!-- Paginating Buttons -->
               <div class="container" v-show="nextContinuationToken || previousContinuationTokens.length > 0"
@@ -187,6 +205,14 @@
                   tag="a"
                   :href="props.row.installUrl"
                   >Install</b-button>
+
+                <!-- Download Button -->
+                <b-button
+                  v-if="config.allowDownload && props.row.type === 'content'"
+                  type="is-text"
+                  icon-left="download" size="is-medium"
+                  @click="downloadS3Item(props.row.url, props.row.name)"
+                  ></b-button>
               </div>
             </div>
 
@@ -596,6 +622,83 @@
         },
         formatDateTime_relative(date) {
           return date ? moment(date).fromNow() : '-'
+        },
+        async downloadAllS3Items() {
+          const zip = new JSZip();
+          const promises = this.pathContentTableData
+            .filter(item => item.type === 'content')
+            .map(async item => {
+                const response = await fetch(item.url);
+                const data = await response.blob();
+                const reader = new FileReader();
+                return new Promise((resolve, reject) => {
+                    reader.onloadend = () => {
+                        zip.file(item.name, reader.result);
+                        resolve();
+                    };
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(data);
+                });
+            });
+
+          try {
+            await Promise.all(promises);
+
+            zip.generateAsync({ type: 'blob' }).then(content => {
+                // content is the zipped file
+                const urlObject = window.URL || window.webkitURL;
+                const objectUrl = urlObject.createObjectURL(content);
+
+                const link = document.createElement('a');
+                const folderName = this.pathPrefix.split('/').filter(Boolean).pop() || 'download';
+                link.href = objectUrl;
+                link.download = `${folderName}.zip`;
+                link.click();
+                urlObject.revokeObjectURL(objectUrl);
+            });
+
+            this.$buefy.notification.open({
+                message: 'All files have been downloaded and zipped successfully.',
+                type: 'is-success',
+                duration: 5000,
+                position: 'is-bottom'
+            });
+          } catch (error) {
+              this.$buefy.notification.open({
+                  message: error.message?.escapeHTML(),
+                  type: 'is-danger',
+                  duration: 5000,
+                  position: 'is-bottom'
+              });
+          }
+        },
+        async downloadS3Item(fileUrl, fileName) {
+          try {
+            let response = await fetch(fileUrl);
+            let data = await response.blob();
+            let urlObject = window.URL || window.webkitURL;
+            let objectUrl = urlObject.createObjectURL(data);
+
+            let link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = fileName;
+            link.click();
+            urlObject.revokeObjectURL(objectUrl);
+
+            this.$buefy.notification.open({
+                message: `Successfully downloaded file ${fileName}.`,
+                type: 'is-success',
+                duration: 5000,
+                position: 'is-bottom'
+              });
+            } catch (error) {
+              this.$buefy.notification.open({
+                message: error.message?.escapeHTML(),
+                type: 'is-danger',
+                duration: 5000,
+                position: 'is-bottom'
+            });
+          }
         }
       },
       async mounted() {
