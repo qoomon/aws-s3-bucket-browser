@@ -355,12 +355,8 @@
     if (!match) {
       type = 'DGO'
       // check for urls like https://example-bucket.nyc3.digitaloceanspaces.com/index.html
-      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.(?<region>[^.]+)\.digitaloceanspaces\.com(\/(?<prefix>[^?]+))?/)
-    }
-    if (!match) {
-      type = 'DGO-CDN'
       // check for urls like https://example-bucket.nyc3.cdn.digitaloceanspaces.com/index.html
-      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.(?<region>[^.]+)\.cdn\.digitaloceanspaces\.com(\/(?<prefix>[^?]+))?/)
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.(?<region>[^.]+)\.(?<domain>(cdn\.)?digitaloceanspaces\.com)(\/(?<prefix>[^?]+))?/)
     }
     if (!match) {
       type = 'IBM'
@@ -372,21 +368,18 @@
       switch (type) {
         case 'AWS':
           config.bucketUrl = `${match.groups.protocol}://s3.${match.groups.region}.amazonaws.com/${match.groups.name}`
-          if(config.rootPrefix === undefined) config.rootPrefix = match.groups.prefix
           break;
         case 'GCP':
           config.bucketUrl = `${match.groups.protocol}://storage.googleapis.com/${match.groups.name}`
           break;
         case 'DGO':
-          config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.${match.groups.region}.digitaloceanspaces.com`
-          break;
-        case 'DGO-CDN':
-          config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.${match.groups.region}.cdn.digitaloceanspaces.com`
+          config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.${match.groups.region}.${match.groups.domain}`
           break;
         case 'IBM':
           config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.s3.${match.groups.region}.cloud-object-storage.appdomain.cloud/`
           break;
       }
+      if(config.rootPrefix === undefined) config.rootPrefix = match.groups.prefix
     }
     console.log("Bucket REST API: " + config.bucketUrl)
 
