@@ -19,6 +19,8 @@
       //   * http://BUCKET-NAME.s3-website-BUCKET-REGION.amazonaws.com/index.html
       //   * https://storage.googleapis.com/BUCKET-NAME/index.html
       //   * https://BUCKET-NAME.s3-web.BUCKET-REGION.cloud-object-storage.appdomain.cloud/
+      //   * https://BUCKET-NAME.BUCKET-REGION.digitaloceanspaces.com
+      //   * https://BUCKET-NAME.BUCKET-REGION.cdn.digitaloceanspaces.com
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL, e.g.
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
       //   * https://storage.googleapis.com/BUCKET-NAME
@@ -345,10 +347,16 @@
       // check for urls like http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com(\/(?<prefix>[^?]+))?/)
     }
-     if (!match) {
+    if (!match) {
       type = 'GCP'
       // check for urls like https://storage.googleapis.com/example-bucket/index.html
       match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/storage\.googleapis\.com\/(?<name>[^/]+)(\/(?<prefix>[^?]+))?/)
+    }
+    if (!match) {
+      type = 'DGO'
+      // check for urls like https://example-bucket.nyc3.digitaloceanspaces.com/index.html
+      // check for urls like https://example-bucket.nyc3.cdn.digitaloceanspaces.com/index.html
+      match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.(?<region>[^.]+)\.(?<domain>(cdn\.)?digitaloceanspaces\.com)(\/(?<prefix>[^?]+))?/)
     }
     if (!match) {
       type = 'IBM'
@@ -360,15 +368,18 @@
       switch (type) {
         case 'AWS':
           config.bucketUrl = `${match.groups.protocol}://s3.${match.groups.region}.amazonaws.com/${match.groups.name}`
-          if(config.rootPrefix === undefined) config.rootPrefix = match.groups.prefix
           break;
         case 'GCP':
           config.bucketUrl = `${match.groups.protocol}://storage.googleapis.com/${match.groups.name}`
+          break;
+        case 'DGO':
+          config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.${match.groups.region}.${match.groups.domain}`
           break;
         case 'IBM':
           config.bucketUrl = `${match.groups.protocol}://${match.groups.name}.s3.${match.groups.region}.cloud-object-storage.appdomain.cloud/`
           break;
       }
+      if(config.rootPrefix === undefined) config.rootPrefix = match.groups.prefix
     }
     console.log("Bucket REST API: " + config.bucketUrl)
 
