@@ -30,6 +30,8 @@ Single HTML file to browse AWS S3 buckets
       //   * http://BUCKET-NAME.s3-website-BUCKET-REGION.amazonaws.com/index.html
       //   * https://storage.googleapis.com/BUCKET-NAME/index.html
       //   * https://BUCKET-NAME.s3-web.BUCKET-REGION.cloud-object-storage.appdomain.cloud/
+      //   * https://BUCKET-NAME.BUCKET-REGION.digitaloceanspaces.com
+      //   * https://BUCKET-NAME.BUCKET-REGION.cdn.digitaloceanspaces.com
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL, e.g.
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
       //   * https://storage.googleapis.com/BUCKET-NAME
