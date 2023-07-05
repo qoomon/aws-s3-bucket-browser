@@ -5,6 +5,7 @@ Single HTML file to browse AWS S3 buckets
 ## [Demo](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.amazonaws.com/spacenet-dataset#spacenet/)
 
 ## Features
+* Compatible Providers: [![GCP](https://www.google.com/s2/favicons?sz=16&domain=cloud.google.com)](cloud.google.com) [![IBM](https://www.google.com/s2/favicons?sz=16&domain=ibm.com)](ibm.com) [![DigitalOcean](https://www.google.com/s2/favicons?sz=161&domain=digitalocean.com)](digitalocean.com)
 * List all files in a table view
 * Treat and display `/` in keys as folders
 * Render preview for Makrdown files
