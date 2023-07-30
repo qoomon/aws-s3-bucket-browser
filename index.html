@@ -304,6 +304,11 @@
       return /iPad|iPhone|iPod/.test(navigator.platform) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     }
+
+    function encodePath(path) {
+      const replaceChars = { ";": "%3B", "?": "%3F", ":": "%3A", "@": "%40", "&": "%26", "=": "%3D", "+": "%2B", "$": "%24", ",": "%2C", "#": "%23" }
+      return encodeURI(path).split("").map(char => replaceChars[char] || char).join("");
+    }
   </script>
 
 
@@ -443,7 +448,7 @@
       methods: {
         moment,
         urlFromPathPrefix(pathPrefix) {
-          return `${(this.config.bucketMaskUrl || this.config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(pathPrefix)}`
+          return `${(this.config.bucketMaskUrl || this.config.bucketUrl).replace(/\/*$/,'')}/${encodePath(pathPrefix)}`
         },
         validBucketPrefix(prefix) {
           if(prefix === '') return true
@@ -486,7 +491,7 @@
               bucketListApiUrl += `&max-keys=${config.pageSize}`
             }
             if (this.continuationToken) {
-              bucketListApiUrl += `&continuation-token=${encodeURIComponent(this.continuationToken)}`
+              bucketListApiUrl += `&continuation-token=${encodePath(this.continuationToken)}`
             }
             let listBucketResultResponse = await fetch(bucketListApiUrl)
             let listBucketResultXml = await listBucketResultResponse.text()
@@ -536,11 +541,11 @@
                 }
               }
 
-              let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(content.key)}`
+              let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodePath(content.key)}`
               let installUrl = undefined
               if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
                 // generate manifest.plist install urls
-                installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(url)}`
+                installUrl = `itms-services://?action=download-manifest&url=${encodePath(url)}`
               }
               return {
                 type: 'content',
