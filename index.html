@@ -497,8 +497,9 @@
             let listBucketResultXml = await listBucketResultResponse.text()
 
             listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml")
-            if (!listBucketResult.querySelector('ListBucketResult > Delimiter')) {
-              throw Error(`Bucket URL ${config.bucketUrl} is not a valid bucket API URL, response does not contain <ListBucketResult><Delimiter> tag.`)
+
+            if (!listBucketResult.querySelector('ListBucketResult')) {
+              throw Error(`Bucket URL ${config.bucketUrl} is not a valid bucket API URL, response does not contain <ListBucketResult> tag.`)
             }
           } catch (error) {
             this.$buefy.notification.open({
