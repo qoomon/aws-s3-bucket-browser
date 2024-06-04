@@ -27,6 +27,7 @@ Single HTML file to browse AWS S3 buckets
       bucketUrl: undefined,
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
+      //   * https://s3.amazonaws.com/BUCKET-NAME/index.html
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME/index.html
       //   * http://BUCKET-NAME.s3-website-BUCKET-REGION.amazonaws.com/index.html
       //   * https://storage.googleapis.com/BUCKET-NAME/index.html
@@ -34,7 +35,7 @@ Single HTML file to browse AWS S3 buckets
       //   * https://BUCKET-NAME.BUCKET-REGION.digitaloceanspaces.com
       //   * https://BUCKET-NAME.BUCKET-REGION.cdn.digitaloceanspaces.com
       // If bucketUrl is set manually, ensure this is the bucket Rest API URL, e.g.
-      //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME
+      //   * https://s3.amazonaws.com/BUCKET-NAME
       //   * https://storage.googleapis.com/BUCKET-NAME
       //   The URL should return an XML document with <ListBucketResult> as root element.
       rootPrefix: undefined, // e.g. 'subfolder/'
