@@ -93,7 +93,9 @@ Single HTML file to browse AWS S3 buckets
               "GET"
           ],
           "AllowedOrigins": [
-              "http://www.example.com"
+              "http://www.example.com",
+              "https://BUCKET-NAME.s3.amazonaws.com",
+              "https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME",
           ],
           "ExposeHeaders": [
               "x-amz-server-side-encryption",
