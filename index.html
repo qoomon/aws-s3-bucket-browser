@@ -177,7 +177,7 @@
                   v-if="props.row.type === 'content' && props.row.name.endsWith('.md')"
                   type="is-text"
                   tag="a"
-                  :href="`#${pathPrefix + props.row.name}::markdown`"
+                  :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}::markdown`"
                   icon-left="image" size="is-medium"
                   target="_blank"
                 ></b-button>
