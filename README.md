@@ -14,6 +14,9 @@ Single HTML file to browse AWS S3 buckets
 ## Installation
 
 #### Self-Hosted
+<details>
+<summary>Click me</summary>
+ 
 * Just download [`index.html`](index.html) and upload it to your bucket.
   * Adjust [config](index.html#L8-L37) within `index.html` if needed, e.g.
     ```js
@@ -107,8 +110,13 @@ Single HTML file to browse AWS S3 buckets
     ]
     ```
 * Open `<YOUR BUCKET URL>/index.html` in your browser.
-
+  
+</details>
+ 
 #### Hosted
+<details>
+<summary>Click me</summary>
+ 
 * ##### ⚠️ Ensure Bucket Permissions
   * see [Self-Hosted](#self-hosted)
 * ##### ⚠️ Ensure Bucket CORS
@@ -117,8 +125,12 @@ Single HTML file to browse AWS S3 buckets
   * `${INDEX_FILE_LOCATION}?bucket=${S3_BUCKET_URL}` 
   * e.g. [`https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org`](https://qoomon.github.io/aws-s3-bucket-browser/index.html?bucket=https://s3.eu-west-1.amazonaws.com/data.openspending.org)
 
+</details>
 
 ### CloudFront Setup
+<details>
+<summary>Click me</summary>
+ 
 If you use CloudFront in upfront of your S3 bucket ensure following CloudFront settings.
 - Allowed/Cached HTTP Methods: `GET`, `HEAD`, `OPTIONS`
 - Cached Based on Selected Headers: `Whitelist`
@@ -127,7 +139,12 @@ If you use CloudFront in upfront of your S3 bucket ensure following CloudFront s
   - `Origin`
 - Query String Forwarding and Caching: `Forward all`
 
+</details>
+
 ### IBM Cloud Object Storage Setup
+<details>
+<summary>Click me</summary>
+ 
 IBM Cloud Object storage only supports virtual host-style addressing, i.e. `https://<bucket-name>s3-web.<region>.cloud-object-storage.appdomain.cloud/` for static website hosting. Otherwise follow the instructions
 in this [tutorial](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-static-website-tutorial) to configure your bucket. In addition, you may need to [configure CORS](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-curl#curl-new-cors) for your bucket.
 
@@ -140,3 +157,5 @@ in this [tutorial](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-o
   </CORSRule>
 </CORSConfiguration>
 ```
+
+</details>
