@@ -44,20 +44,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link id="favicon" rel="shortcut icon" />
 
-  <script src="https://unpkg.com/vue@2.7.16/dist/vue.min.js" integrity="sha384-YVYXhPGIH/Gmcr0W5Rin4PcpcsG1a4pcdUUod1CnbDEJut7XiUaJtSlNKeRLJBPk" crossorigin="anonymous"></script>
-  <script>Vue.config.productionTip = false;</script>
+  <script src="https://unpkg.com/vue@3.4.32/dist/vue.global.js" integrity="sha384-FveH+68pu+tWw7OUVZzjpCUxwQDi5rlnMK7eaBIbhk3x6YC++eMkkxMeiRT5eyUQ" crossorigin="anonymous"></script>
   <style>[v-cloak] {display: none}</style>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" integrity="sha384-HphS8cQyN+eYiJ5PMbzShG6qZdRtvHPVLPkYb8JwMkmNgaIxrFVDhQe3jIbq3EZ2" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.2/css/all.css" integrity="sha384-PPIZEGYM1v8zp5Py7UjFb79S58UeqCL9pYVnVPURKEqvioPROaVAJKKLzvH2rDnI" crossorigin="anonymous">
-  <script src="https://unpkg.com/buefy@0.9.29/dist/buefy.min.js" integrity="sha384-6JhI3PsQBPiHaSOuaAjOyxxs0DelGcjnJAOFmbomg9NuUpqufLqfuv41jHOf2z0G" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.29/dist/buefy.min.css" integrity="sha384-XU9oGhqh0epfmMUKzxIpDEO0mhmJoURmiyQzP7RamvMFEcJESnKUDObvN8LDoMkc" crossorigin="anonymous">
+  <script>window.process = { env: { NODE_ENV: 'production' } };</script>
+  <script src="https://unpkg.com/@ntohq/buefy-next@0.1.4/dist/buefy.min.js" integrity="sha384-fd8rwC0JXdulBombqOXIudg/1G+9AbB0zDYPAi8SfJy+RemRrq0jG1TC6PUS8EpX" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@ntohq/buefy-next@0.1.4/dist/buefy.min.css" integrity="sha384-uKOSQ8X8o+jTwmPclX1z/d6IKB+spCvEua2ysnQprHMuYMf35xBOMGDxejgM2qGS" crossorigin="anonymous">
   <script src="https://unpkg.com/moment@2.30.1/min/moment.min.js" integrity="sha384-jzJ+sNWbKe71gDLLfQKgdtslQjhK70oKLFN+wmwxyg6mQN7Vem+wzce4pryF0HP/" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/zero-md@2.5.4/dist/zero-md.min.js" type="module" integrity="sha384-HYAxqGDSUbWswWhOZPO5wPwUgrEhMdsZMRI4+ZqSMKYYQ1KRWeh7pM28P/8Hiwqp" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/zero-md@3.0.0?register" type="module" integrity="sha384-rEobhniwlwAquQiUTy2McGJWpm0H1EpkURdLKoThh6Lv2fkuM2NPIX64ptgfC8Me" crossorigin="anonymous"></script>
 </head>
 
 <body >
-  <div id="app" v-cloak :style="cssVars">
+  <div id="app" v-cloak>
+  <div :style="cssVars">
 
     <!-- Markdown Renderer -->
     <zero-md v-if="pathPrefix.endsWith('::markdown')"
@@ -111,7 +112,7 @@
                       :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
                       icon-right-clickable
                       @icon-right-click="searchPrefix = ''; searchByPrefix()"
-                      @keyup.enter.native="searchByPrefix">
+                      @keyup.enter="searchByPrefix">
                   </b-input>
               </b-field>
 
@@ -168,7 +169,7 @@
                 :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"
                 @click="document.activeElement.blur()"
                 >
-                <template>{{ props.row.name }}</template>
+                {{ props.row.name }}
               </b-button>
 
               <div class="name-column-buttons">
@@ -281,6 +282,7 @@
         <a :href="`${config.bucketUrl}?prefix=${bucketPrefix}`">Bucket: {{ config.bucketUrl }}</a>
       </div>
     </template>
+  </div>
   </div>
   <!-- GitHub Corner -->
   <a href="https://github.com/qoomon/aws-s3-bucket-browser" class="github-corner" aria-label="View source on GitHub">
@@ -397,23 +399,20 @@
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
 
-    Vue.use(Buefy.default, {
-      defaultIconPack: 'fa'
-    })
+    const app = Vue.createApp({
+      data() {
+        return {
+          config: config, // defined in <head> section
+          pathPrefix: '',
+          searchPrefix: '',
+          pathContentTableData: [],
 
-    new Vue({
-      el: '#app',
-      data: {
-        config, // defined in <head> section
-        pathPrefix: '',
-        searchPrefix: '',
-        pathContentTableData: [],
+          previousContinuationTokens: [],
+          continuationToken: undefined,
+          nextContinuationToken: undefined,
 
-        previousContinuationTokens: [],
-        continuationToken: undefined,
-        nextContinuationToken: undefined,
-
-        windowWidth: window.innerWidth
+          windowWidth: window.innerWidth
+        }
       },
       computed: {
         cssVars() {
@@ -623,10 +622,16 @@
 
         this.refresh()
       },
-      async beforeDestroy() {
+      async beforeUnmount() {
         window.removeEventListener('resize')
       }
     })
+
+    app.use(Buefy.default, {
+      defaultIconPack: 'fa'
+    })
+
+    app.mount('#app')
   </script>
 
   <style scoped>
