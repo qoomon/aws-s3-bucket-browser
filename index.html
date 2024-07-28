@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.0.1 -->
+<!-- S3 Bucket Explorer Version: 3.0.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -264,7 +264,8 @@
                                     :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
                                     icon-right-clickable
                                     @icon-right-click="searchPrefix = ''; searchByPrefix()"
-                                    @keyup.enter="searchByPrefix">
+                                    @keydown.enter="searchByPrefix"
+                                    enterkeyhint="search">
                             </b-input>
                         </b-field>
 
