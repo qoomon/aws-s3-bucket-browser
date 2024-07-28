@@ -278,7 +278,8 @@
                                         :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
                                         icon-right-clickable
                                         @icon-right-click="searchPrefix = ''; searchByPrefix()"
-                                        @keyup.enter="searchByPrefix">
+                                        @keydown.enter="searchByPrefix"
+                                        enterkeyhint="search">
                                 </b-input>
                             </b-field>
 
