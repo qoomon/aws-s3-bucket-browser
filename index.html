@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.0.0 -->
+<!-- S3 Bucket Explorer Version: 3.0.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -67,6 +67,7 @@
     <script src="https://unpkg.com/md-block@0.0.1/md-block.js" type="module"
             integrity="sha384-lcLQhSI/hNGnkXOqZpIXGVa/+7dZTmSAdFWDcSVpUVcWrzEr+iH+fsHpTLZZGK/l"
             crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/zero-md@3?register" type="module"></script>
 
     <!-- Style -->
     <style>
@@ -74,10 +75,8 @@
             width: 100vw;
             min-height: 100vh;
             position: relative;
-            padding: 2.25rem 2.5rem;
             background-color: #f5f5f5;
             overflow-y: auto;
-
             --primary-color: #167df0;
         }
 
@@ -85,30 +84,34 @@
             color: var(--primary-color);
         }
 
-        .buttons .field {
-            margin-bottom: 0.5rem;
+        #app {
+            padding: 2.25rem 2.5rem;
         }
 
-        #breadcrumps {
+        #app #breadcrumps {
             margin-right: .5em;
         }
 
-        #breadcrumps .button .icon:first-child:not(:last-child) {
+        #app #breadcrumps .button .icon:first-child:not(:last-child) {
             margin-left: calc(-.5em - 1px);
             margin-right: calc(-.5em - 1px);
         }
 
-        .button.is-primary {
-            background-color: var(--primary-color) !important;
+        #app .search-prefix-matches-path-prefix input.input {
+            color: var(--primary-color) !important;
+            font-weight: bold;
         }
 
-        .button.is-primary.is-outlined {
+        #app .button.is-primary {
+            background-color: var(--primary-color) !important;
+        }
+        #app .button.is-primary.is-outlined {
             background-color: transparent !important;
             border-color: var(--primary-color) !important;
             color: var(--primary-color) !important;
         }
 
-        .table .button.is-text {
+        #app .table .button.is-text {
             padding: .1em .75em;
             height: auto;
             text-decoration: none;
@@ -120,64 +123,56 @@
             text-align: left;
             overflow: hidden;
         }
-
-        .table .button.is-text.is-focused,
-        .table .button.is-text.is-hovered,
-        .table .button.is-text:focus,
-        .table .button.is-text:hover {
+        #app .table .button.is-text.is-focused,
+        #app .table .button.is-text.is-hovered,
+        #app .table .button.is-text:focus,
+        #app .table .button.is-text:hover {
             background-color: transparent;
             color: inherit;
         }
 
-        .button.is-text > span {
+        #app .buttons .field {
+            margin-bottom: 0.5rem;
+        }
+        #app .button.is-text > span {
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .search-prefix-matches-path-prefix input.input {
-            color: var(--primary-color) !important;
-            font-weight: bold;
-        }
-
-        .button.is-primary:focus:not(:active) {
+        #app .button.is-primary:focus:not(:active) {
             box-shadow: inset 0px 0px 0px 0.1em #ffffffcc;
         }
 
-        .input:focus:not(.is-danger),
-        .select select:focus {
+        #app .input:focus:not(.is-danger),
+
+        #app .select select:focus {
             border-color: var(--primary-color);
             box-shadow: none;
         }
-
-        .select:not(.is-multiple):not(.is-loading)::after {
+        #app .select:not(.is-multiple):not(.is-loading)::after {
             border-color: var(--primary-color) !important;
         }
 
-        .name-column > div:first-child {
+        #app .name-column > div:first-child {
             display: flex;
             align-items: center;
         }
-
-        .name-column-icon {
+        #app .name-column-icon {
             display: block;
             flex-basis: 1.5rem;
             flex-grow: 0;
             flex-shrink: 0;
         }
-
-        .name-column-buttons {
+        #app .name-column-buttons {
             display: flex;
             margin-left: auto;
         }
-
-        .name-column-buttons > .button {
+        #app .name-column-buttons > .button {
             height: 1em;
             height: auto;
             padding: 0em 0.6em;
             margin-left: 0.5em;
         }
-
-        .name-column-details {
+        #app .name-column-details {
             display: flex;
             align-items: flex-end;
             justify-content: center;
@@ -188,7 +183,7 @@
             flex-direction: column;
         }
 
-        .footer-bucket-url {
+        #app .footer-bucket-url {
             position: absolute;
             bottom: 0;
             left: 0;
@@ -198,22 +193,19 @@
             text-align: center;
             color: darkgray;
         }
-
-        .footer-bucket-url a {
+        #app .footer-bucket-url a {
             color: inherit;
         }
 
         @media screen and (max-width: 768px) {
-            .name-column::before {
+            #app .name-column::before {
                 display: none !important;
             }
-
-            .name-column > div:first-child {
+            #app .name-column > div:first-child {
                 max-width: calc(100% - 5.5rem);
             }
-
-            .size-column,
-            .modified-column {
+            #app .size-column,
+            #app .modified-column {
                 display: none !important;
             }
         }
@@ -221,191 +213,149 @@
 </head>
 
 <body>
+
+<!-- Explorer App-->
 <div id="app" v-cloak>
     <div :style="cssVars">
-        <!-- Markdown Renderer -->
-        <md-block v-if="pathPrefix.endsWith('::markdown')"
-                  :src="urlFromPathPrefix(bucketPrefix.replace(/::markdown$/,''))"
-                  untrusted>
-        </md-block>
+        <!-- Header -->
+        <div class="level">
+            <div class="level-left" style="max-width: 100%;">
+                <figure class="level-item image is-96x96" style="margin-right: 1.5rem;">
+                    <img :src="config.logo"/>
+                </figure>
+                <div>
+                    <h1 class="title" v-html="config.titleHTML"></h1>
+                    <h2 class="subtitle" v-html="config.subtitleHTML"></h2>
+                </div>
+            </div>
+        </div>
 
-        <!-- Main Explorer -->
-        <template v-else>
-            <!-- Header -->
-            <div class="level">
-                <div class="level-left" style="max-width: 100%;">
-                    <figure class="level-item image is-96x96" style="margin-right: 1.5rem;">
-                        <img :src="config.logo"/>
-                    </figure>
-                    <div>
-                        <h1 class="title" v-html="config.titleHTML"></h1>
-                        <h2 class="subtitle" v-html="config.subtitleHTML"></h2>
+        <div class="container">
+            <!-- Navigation Bar -->
+            <div class="container is-clearfix" style="margin-bottom: 1rem;">
+                <div class="buttons is-pulled-left" style="width: 100%;">
+                    <div id="breadcrumps">
+                        <!-- Prefix Breadcrumps -->
+                        <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
+                                  type="is-primary" rounded
+                                  tag="a"
+                                  :href="breadcrump.url"
+                                  target=""
+                                  icon-pack="fas"
+                                  :icon-left="index == 0 ? 'bucket': ''"
+                                  :style="{ fontWeight: index == 0 ? 'bolder': ''}"
+                                  style="white-space: pre;"
+                        >
+                            <template v-if="index > 0">{{ breadcrump.name }}</template>
+                        </b-button>
+                    </div>
+                    <div class="container" style="display: flex;">
+                        <!-- Prefix Search Input -->
+                        <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
+                                 :class="searchPrefix && pathPrefix.replace(/^.*\//,'') === searchPrefix ? 'search-prefix-matches-path-prefix' : ''"
+                                 style="flex: auto;">
+                            <b-input
+                                    rounded
+                                    v-model="searchPrefix"
+                                    placeholder="search by prefix"
+                                    icon="magnifying-glass"
+                                    icon-clickable
+                                    @icon-click="searchByPrefix"
+                                    :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
+                                    icon-right-clickable
+                                    @icon-right-click="searchPrefix = ''; searchByPrefix()"
+                                    @keydown.enter="searchByPrefix"
+                                    enterkeyhint="search">
+                            </b-input>
+                        </b-field>
+
+                        <!-- Paginating Buttons -->
+                        <div class="container"
+                             v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+                             style="display: contents;">
+                            <b-button
+                                    type="is-primary" rounded
+                                    icon-pack="fas"
+                                    icon-left="angle-left"
+                                    @click="previousPage"
+                                    :disabled="previousContinuationTokens.length === 0"
+                                    style="margin-left: 2rem;">
+                            </b-button>
+                            <b-button
+                                    type="is-primary" rounded
+                                    icon-pack="fas"
+                                    icon-right="angle-right"
+                                    @click="nextPage"
+                                    :disabled="!nextContinuationToken"
+                            >
+                            </b-button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="container">
-                <!-- Navigation Bar -->
-                <div class="container is-clearfix" style="margin-bottom: 1rem;">
-                    <div class="buttons is-pulled-left" style="width: 100%;">
-                        <div id="breadcrumps">
-                            <!-- Prefix Breadcrumps -->
-                            <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
-                                      type="is-primary" rounded
-                                      tag="a"
-                                      :href="breadcrump.url"
-                                      target=""
-                                      icon-pack="fas"
-                                      :icon-left="index == 0 ? 'bucket': ''"
-                                      :style="{ fontWeight: index == 0 ? 'bolder': ''}"
-                                      style="white-space: pre;"
-                            >
-                                <template v-if="index > 0">{{ breadcrump.name }}</template>
-                            </b-button>
-                        </div>
-                        <div class="container" style="display: flex;">
-                            <!-- Prefix Search Input -->
-                            <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
-                                     :class="searchPrefix && pathPrefix.replace(/^.*\//,'') === searchPrefix ? 'search-prefix-matches-path-prefix' : ''"
-                                     style="flex: auto;">
-                                <b-input
-                                        rounded
-                                        v-model="searchPrefix"
-                                        placeholder="search by prefix"
-                                        icon="magnifying-glass"
-                                        icon-clickable
-                                        @icon-click="searchByPrefix"
-                                        :icon-right="searchPrefix !== '' ? 'close-circle' : ''"
-                                        icon-right-clickable
-                                        @icon-right-click="searchPrefix = ''; searchByPrefix()"
-                                        @keydown.enter="searchByPrefix"
-                                        enterkeyhint="search">
-                                </b-input>
-                            </b-field>
+            <!-- Content Table -->
+            <b-table
+                    :data="pathContentTableData"
+                    :default-sort="config.defaultOrder.split('-')[0]"
+                    :default-sort-direction="config.defaultOrder.split('-')[1]"
+                    :mobile-cards="true"
+            >
+                <b-table-column
+                        v-slot="props"
+                        field="name"
+                        label="Name"
+                        sortable :custom-sort="sortTableData('name')"
+                        cell-class="name-column"
+                >
+                    <div>
+                        <b-icon
+                                pack="far"
+                                :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
+                                class="name-column-icon"
+                                style="text-align: left;"
+                        >
+                        </b-icon>
 
-                            <!-- Paginating Buttons -->
-                            <div class="container"
-                                 v-show="nextContinuationToken || previousContinuationTokens.length > 0"
-                                 style="display: contents;">
-                                <b-button
-                                        type="is-primary" rounded
-                                        icon-pack="fas"
-                                        icon-left="angle-left"
-                                        @click="previousPage"
-                                        :disabled="previousContinuationTokens.length === 0"
-                                        style="margin-left: 2rem;">
-                                </b-button>
-                                <b-button
-                                        type="is-primary" rounded
-                                        icon-pack="fas"
-                                        icon-right="angle-right"
-                                        @click="nextPage"
-                                        :disabled="!nextContinuationToken"
-                                >
-                                </b-button>
-                            </div>
+                        <b-button
+                                type="is-text" rounded
+                                tag="a"
+                                :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"
+                                @click="blurActiveElement"
+                        >
+                            {{ props.row.name }}
+                        </b-button>
+
+                        <div class="name-column-buttons">
+                            <!-- Markdown Preview Button -->
+                            <b-button
+                                    v-if="props.row.type === 'content' && props.row.name.endsWith('.md')"
+                                    type="is-text"
+                                    tag="a"
+                                    :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}::preview`"
+                                    icon-left="image" size="is-medium"
+                                    target="_blank"
+                                    @click="blurActiveElement"
+                            ></b-button>
+
+                            <!-- Install Button -->
+                            <b-button
+                                    v-if="props.row.installUrl"
+                                    type="is-primary" rounded outlined
+                                    tag="a"
+                                    :href="props.row.installUrl"
+                                    @click="blurActiveElement"
+                            >Install
+                            </b-button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Content Table -->
-                <b-table
-                        :data="pathContentTableData"
-                        :default-sort="config.defaultOrder.split('-')[0]"
-                        :default-sort-direction="config.defaultOrder.split('-')[1]"
-                        :mobile-cards="true"
-                >
-                    <b-table-column
-                            v-slot="props"
-                            field="name"
-                            label="Name"
-                            sortable :custom-sort="sortTableData('name')"
-                            cell-class="name-column"
+                    <div
+                            v-if="cardView && (props.row.size || props.row.dateModified)"
+                            class="name-column-details"
                     >
-                        <div>
-                            <b-icon
-                                    pack="far"
-                                    :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
-                                    class="name-column-icon"
-                                    style="text-align: left;"
-                            >
-                            </b-icon>
+                        <div>{{ formatBytes(props.row.size) }}</div>
 
-                            <b-button
-                                    type="is-text" rounded
-                                    tag="a"
-                                    :href="props.row.type === 'content' ? props.row.url : `#${props.row.prefix}`"
-                                    @click="blurActiveElement"
-                            >
-                                {{ props.row.name }}
-                            </b-button>
-
-                            <div class="name-column-buttons">
-                                <!-- Markdown Preview Button -->
-                                <b-button
-                                        v-if="props.row.type === 'content' && props.row.name.endsWith('.md')"
-                                        type="is-text"
-                                        tag="a"
-                                        :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}::markdown`"
-                                        icon-left="image" size="is-medium"
-                                        target="_blank"
-                                        @click="blurActiveElement"
-                                ></b-button>
-
-                                <!-- Install Button -->
-                                <b-button
-                                        v-if="props.row.installUrl"
-                                        type="is-primary" rounded outlined
-                                        tag="a"
-                                        :href="props.row.installUrl"
-                                        @click="blurActiveElement"
-                                >Install
-                                </b-button>
-                            </div>
-                        </div>
-
-                        <div
-                                v-if="cardView && (props.row.size || props.row.dateModified)"
-                                class="name-column-details"
-                        >
-                            <div>{{ formatBytes(props.row.size) }}</div>
-
-                            <b-tooltip
-                                    :active="!!props.row.dateModified"
-                                    type="is-light"
-                                    size="is-small"
-                                    position="is-left"
-                                    animated
-                                    multilined
-                            >
-                                <div>{{ formatDateTime_relative(props.row.dateModified) }}</div>
-                                <template v-slot:content>
-                                    <span>{{ formatDateTime_date(props.row.dateModified) }}</span>
-                                    <br>
-                                    <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
-                                </template>
-                            </b-tooltip>
-
-                        </div>
-                    </b-table-column>
-                    <b-table-column
-                            v-slot="props"
-                            field="size" numeric
-                            label="Size"
-                            sortable :custom-sort="sortTableData('size')"
-                            right width="128"
-                            cell-class="size-column"
-                    >
-                        {{ formatBytes(props.row.size) }}
-                    </b-table-column>
-                    <b-table-column
-                            v-slot="props"
-                            field="dateModified"
-                            label="Date Modified"
-                            sortable :custom-sort="sortTableData('dateModified')"
-                            centered width="256"
-                            cell-class="modified-column"
-                    >
                         <b-tooltip
                                 :active="!!props.row.dateModified"
                                 type="is-light"
@@ -421,39 +371,116 @@
                                 <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
                             </template>
                         </b-tooltip>
-                    </b-table-column>
-                </b-table>
 
-                <!-- Paginating Buttons -->
-                <div class="container is-clearfix" style="margin-top: 1rem;">
-                    <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
-                         class="buttons is-pulled-right">
-                        <b-button
-                                type="is-primary" rounded
-                                icon-pack="fas"
-                                icon-left="angle-left"
-                                @click="previousPage"
-                                :disabled="previousContinuationTokens.length === 0"
-                        >
-                        </b-button>
-                        <b-button
-                                type="is-primary" rounded
-                                icon-pack="fas"
-                                icon-right="angle-right"
-                                @click="nextPage"
-                                :disabled="!nextContinuationToken"
-                        >
-                        </b-button>
                     </div>
+                </b-table-column>
+                <b-table-column
+                        v-slot="props"
+                        field="size" numeric
+                        label="Size"
+                        sortable :custom-sort="sortTableData('size')"
+                        right width="128"
+                        cell-class="size-column"
+                >
+                    {{ formatBytes(props.row.size) }}
+                </b-table-column>
+                <b-table-column
+                        v-slot="props"
+                        field="dateModified"
+                        label="Date Modified"
+                        sortable :custom-sort="sortTableData('dateModified')"
+                        centered width="256"
+                        cell-class="modified-column"
+                >
+                    <b-tooltip
+                            :active="!!props.row.dateModified"
+                            type="is-light"
+                            size="is-small"
+                            position="is-left"
+                            animated
+                            multilined
+                    >
+                        <div>{{ formatDateTime_relative(props.row.dateModified) }}</div>
+                        <template v-slot:content>
+                            <span>{{ formatDateTime_date(props.row.dateModified) }}</span>
+                            <br>
+                            <span>{{ formatDateTime_time(props.row.dateModified) }}</span>
+                        </template>
+                    </b-tooltip>
+                </b-table-column>
+            </b-table>
+
+            <!-- Paginating Buttons -->
+            <div class="container is-clearfix" style="margin-top: 1rem;">
+                <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+                     class="buttons is-pulled-right">
+                    <b-button
+                            type="is-primary" rounded
+                            icon-pack="fas"
+                            icon-left="angle-left"
+                            @click="previousPage"
+                            :disabled="previousContinuationTokens.length === 0"
+                    >
+                    </b-button>
+                    <b-button
+                            type="is-primary" rounded
+                            icon-pack="fas"
+                            icon-right="angle-right"
+                            @click="nextPage"
+                            :disabled="!nextContinuationToken"
+                    >
+                    </b-button>
                 </div>
             </div>
+        </div>
 
-            <!-- Footer -->
-            <div class="footer-bucket-url">
-                <a :href="`${config.bucketUrl}?prefix=${bucketPrefix}`">Bucket: {{ config.bucketUrl }}</a>
-            </div>
-        </template>
+        <!-- Footer -->
+        <div class="footer-bucket-url">
+            <a :href="`${config.bucketUrl}?prefix=${bucketPrefix}`">Bucket: {{ config.bucketUrl }}</a>
+        </div>
+
     </div>
+</div>
+
+<!-- Preview App -->
+<div id="preview" style="display: none;">
+    <zero-md id="preview-markdown" src="#">
+        <template>
+            <!-- Sensible host style defaults -->
+            <style>
+                :host {
+                    display: block;
+                    position: relative;
+                    contain: content;
+                }
+
+                :host([hidden]) {
+                    display: none;
+                }
+                .markdown-body {
+                    min-height: 100vh;
+                    padding: 4.5rem max(calc(100% - max(60em, min(60em, 100%))) / 2, 2.5rem);
+                }
+            </style>
+
+            <!-- GitHub markdown styles (light/dark) -->
+            <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css"/>-->
+
+            <!-- GitHub markdown styles (light) -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css"/>
+
+            <!-- Highlightjs Github theme (light) -->
+            <link rel="stylesheet"
+                  href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"/>
+
+            <!-- Highlightjs Github theme (dark) -->
+            <link rel="stylesheet" media="(prefers-color-scheme:dark)"
+                  href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css"/>
+
+            <!-- KaTeX styles (needed for math) -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css"/>
+        </template>
+    </zero-md>
 </div>
 
 <!-- GitHub Corner -->
@@ -612,242 +639,250 @@
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
 
-    const app = Vue.createApp({
-        data() {
-            return {
-                config: config, // defined in <head> section
-                pathPrefix: '',
-                searchPrefix: '',
-                pathContentTableData: [],
+    const initialPathPrefix = decodeURIComponent(window.location.hash).replace(/^#/, '') || ''
+    if (initialPathPrefix.endsWith('::preview')) {
+        document.getElementById('app').remove()
 
-                previousContinuationTokens: [],
-                continuationToken: undefined,
-                nextContinuationToken: undefined,
+        const filePath = initialPathPrefix.replace(/::preview$/, '')
+        document.getElementById('preview').style.display = 'block'
+        document.getElementById('preview-markdown').src = urlFromPathPrefix(filePath)
 
-                windowWidth: window.innerWidth
-            }
-        },
-        computed: {
-            cssVars() {
-                return {
-                    '--primary-color': this.config.primaryColor
-                }
-            },
-            pathBreadcrumps() {
-                return ['', ...(this.pathPrefix.match(/[^/]*\//g) || [])]
-                    .map((pathPrefixPart, index, pathPrefixParts) => ({
-                        name: decodeURI(pathPrefixPart),
-                        url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
-                    }))
-            },
-            cardView() {
-                return this.windowWidth <= 768
-            },
-            bucketPrefix() {
-                return `${config.rootPrefix}${this.pathPrefix}`
-            }
-        },
-        watch: {
-            pathPrefix() {
-                this.previousContinuationTokens = []
-                this.continuationToken = undefined
-                this.nextContinuationToken = undefined
-                this.searchPrefix = this.pathPrefix.replace(/^.*\//, '')
-                window.location.hash = this.pathPrefix
-                this.refresh()
-            }
-        },
-        methods: {
-            blurActiveElement() {
-                document.activeElement.blur()
-            },
-            moment,
-            urlFromPathPrefix(pathPrefix) {
-                return `${(this.config.bucketMaskUrl || this.config.bucketUrl).replace(/\/*$/, '')}/${encodePath(pathPrefix)}`
-            },
-            validBucketPrefix(prefix) {
-                if (prefix === '') return true
-                if (prefix.startsWith(' ') || prefix.endsWith(' ')) return false
-                if (prefix.includes('//')) return false
-                if (prefix.startsWith('/') && this.bucketPrefix.includes('/')) return false
-                return true
-            },
-            searchByPrefix() {
-                if (this.validBucketPrefix(this.searchPrefix)) {
-                    const pathPrefixDir = this.pathPrefix.replace(/[^/]*$/, '')
-                    this.pathPrefix = pathPrefixDir + this.searchPrefix
-                }
-            },
-            previousPage() {
-                if (this.previousContinuationTokens.length > 0) {
-                    this.continuationToken = this.previousContinuationTokens.pop()
-                    this.refresh()
-                }
-            },
-            nextPage() {
-                if (this.nextContinuationToken) {
-                    this.previousContinuationTokens.push(this.continuationToken)
-                    this.continuationToken = this.nextContinuationToken
-                    this.refresh()
-                }
-            },
-            async refresh() {
-                let listBucketResult
-                try {
-                    if (!config.bucketUrl) {
-                        throw Error("Bucket URL is undefined!")
-                    }
-
-                    let bucketListApiUrl = `${config.bucketUrl}?list-type=2`
-                    bucketListApiUrl += `&delimiter=/`
-                    bucketListApiUrl += `&prefix=${this.bucketPrefix}`
-
-                    if (config.pageSize) {
-                        bucketListApiUrl += `&max-keys=${config.pageSize}`
-                    }
-                    if (this.continuationToken) {
-                        bucketListApiUrl += `&continuation-token=${encodePath(this.continuationToken)}`
-                    }
-                    let listBucketResultResponse = await fetch(bucketListApiUrl)
-                    let listBucketResultXml = await listBucketResultResponse.text()
-
-                    listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml")
-                    if (!listBucketResult.querySelector('ListBucketResult > Delimiter')) {
-                        throw Error(`Bucket URL ${config.bucketUrl} is not a valid bucket API URL, response does not contain <ListBucketResult><Delimiter> tag.`)
-                    }
-                } catch (error) {
-                    this.$buefy.notification.open({
-                        message: error.message?.escapeHTML(),
-                        type: 'is-danger',
-                        duration: 60000,
-                        position: 'is-bottom'
-                    })
-                    throw error
-                }
-
-                let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
-                this.nextContinuationToken = nextContinuationTokenTag && nextContinuationTokenTag.textContent
-
-                let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")]
-                    .map(tag => ({
-                        prefix: tag.querySelector('Prefix').textContent.removePrefix(config.rootPrefix)
-                    }))
-                    .filter(prefix => !config.keyExcludePatterns.find(pattern => pattern.test(prefix.prefix.removePrefix(config.rootPrefix))))
-                    .map(prefix => ({
-                        type: 'prefix',
-                        name: prefix.prefix.split('/').slice(-2)[0] + '/',
-                        prefix: prefix.prefix
-                    }))
-
-                let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")]
-                    .map(tag => ({
-                        key: tag.querySelector('Key').textContent,
-                        size: parseInt(tag.querySelector('Size').textContent),
-                        dateModified: new Date(tag.querySelector('LastModified').textContent)
-                    }))
-                    .filter(content => content.key !== decodeURI(this.bucketPrefix))
-                    .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key.removePrefix(config.rootPrefix))))
-                    .map(content => {
-                        if (content.key.endsWith('/') && !content.size) {
-                            return {
-                                type: 'prefix',
-                                name: content.key.split('/')[0] + '/',
-                                prefix: `${this.pathPrefix}${content.key}`
-                            }
-                        }
-
-                        let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(content.key)}`
-                        let installUrl = undefined
-                        if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
-                            // generate manifest.plist install urls
-                            installUrl = `itms-services://?action=download-manifest&url=${encodePath(url)}`
-                        }
-                        return {
-                            type: 'content',
-                            name: content.key.split('/').slice(-1)[0],
-                            size: content.size,
-                            dateModified: content.dateModified,
-
-                            key: content.key,
-                            url,
-                            installUrl
-                        }
-                    })
-
-                this.pathContentTableData = [...commonPrefixes, ...contents]
-            },
-            sortTableData(columnName) {
-                return (rowA, rowB, isAsc) => {
-                    // prefixes always first
-                    if (rowA.type != rowB.type) {
-                        return rowA.type === 'prefix' ? -1 : 1
-                    }
-
-                    const valueA = rowA[columnName]
-                    const valueB = rowB[columnName]
-                    if (valueA != valueB) {
-                        if (valueA === undefined) {
-                            return isAsc ? -1 : 1
-                        }
-                        if (valueB === undefined) {
-                            return isAsc ? 1 : -1
-                        }
-                        return isAsc ?
-                            (valueA < valueB ? -1 : 1) :
-                            (valueA < valueB ? 1 : -1)
-                    }
-
-                    return 0
-                }
-            },
-            formatBytes(size) {
-                if (!size) {
-                    return '-'
-                }
-                const KB = 1024
-                if (size < KB) {
-                    return size + '  B'
-                }
-                const MB = 1000000
-                if (size < MB) {
-                    return (size / KB).toFixed(0) + ' KB'
-                }
-                const GB = 1000000000
-                if (size < GB) {
-                    return (size / MB).toFixed(2) + ' MB'
-                }
-                return (size / GB).toFixed(2) + ' GB'
-            },
-            formatDateTime_date(date) {
-
-                return date ? moment(date).format('ddd, DD. MMM YYYY') : '-'
-            },
-            formatDateTime_time(date) {
-                return date ? moment(date).format('hh:mm:ss') : '-'
-            },
-            formatDateTime_relative(date) {
-                return date ? moment(date).fromNow() : '-'
-            }
-        },
-        async mounted() {
-            window.onpopstate = () => this.pathPrefix = decodeURIComponent(window.location.hash).replace(/^#/, '')
-            window.onpopstate()
-            window.addEventListener('resize', () => {
-                this.windowWidth = window.innerWidth
-            })
-
-            this.refresh()
-        },
-        async beforeUnmount() {
-            window.removeEventListener('resize')
+        function urlFromPathPrefix(pathPrefix) {
+            return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(pathPrefix)}`
         }
-    })
-    app.config.compilerOptions.isCustomElement = tag => ['md-block'].includes(tag)
-    app.use(Buefy.default, {
-        defaultIconPack: 'fas'
-    })
+    } else {
+        document.getElementById('preview').remove()
 
-    app.mount('#app')
+        const app = Vue.createApp({
+            data() {
+                return {
+                    config: config, // defined in <head> section
+                    pathPrefix: '',
+                    searchPrefix: '',
+                    pathContentTableData: [],
+
+                    previousContinuationTokens: [],
+                    continuationToken: undefined,
+                    nextContinuationToken: undefined,
+
+                    windowWidth: window.innerWidth
+                }
+            },
+            computed: {
+                cssVars() {
+                    return {
+                        '--primary-color': this.config.primaryColor
+                    }
+                },
+                pathBreadcrumps() {
+                    return ['', ...(this.pathPrefix.match(/[^/]*\//g) || [])]
+                        .map((pathPrefixPart, index, pathPrefixParts) => ({
+                            name: decodeURI(pathPrefixPart),
+                            url: '#' + pathPrefixParts.slice(0, index).join('') + pathPrefixPart
+                        }))
+                },
+                cardView() {
+                    return this.windowWidth <= 768
+                },
+                bucketPrefix() {
+                    return `${config.rootPrefix}${this.pathPrefix}`
+                }
+            },
+            watch: {
+                pathPrefix() {
+                    this.previousContinuationTokens = []
+                    this.continuationToken = undefined
+                    this.nextContinuationToken = undefined
+                    this.searchPrefix = this.pathPrefix.replace(/^.*\//, '')
+                    window.location.hash = this.pathPrefix
+                    this.refresh()
+                }
+            },
+            methods: {
+                blurActiveElement() {
+                    document.activeElement.blur()
+                },
+                moment,
+                validBucketPrefix(prefix) {
+                    if (prefix === '') return true
+                    if (prefix.startsWith(' ') || prefix.endsWith(' ')) return false
+                    if (prefix.includes('//')) return false
+                    if (prefix.startsWith('/') && this.bucketPrefix.includes('/')) return false
+                    return true
+                },
+                searchByPrefix() {
+                    if (this.validBucketPrefix(this.searchPrefix)) {
+                        const pathPrefixDir = this.pathPrefix.replace(/[^/]*$/, '')
+                        this.pathPrefix = pathPrefixDir + this.searchPrefix
+                    }
+                },
+                previousPage() {
+                    if (this.previousContinuationTokens.length > 0) {
+                        this.continuationToken = this.previousContinuationTokens.pop()
+                        this.refresh()
+                    }
+                },
+                nextPage() {
+                    if (this.nextContinuationToken) {
+                        this.previousContinuationTokens.push(this.continuationToken)
+                        this.continuationToken = this.nextContinuationToken
+                        this.refresh()
+                    }
+                },
+                async refresh() {
+                    let listBucketResult
+                    try {
+                        if (!config.bucketUrl) {
+                            throw Error("Bucket URL is undefined!")
+                        }
+
+                        let bucketListApiUrl = `${config.bucketUrl}?list-type=2`
+                        bucketListApiUrl += `&delimiter=/`
+                        bucketListApiUrl += `&prefix=${this.bucketPrefix}`
+
+                        if (config.pageSize) {
+                            bucketListApiUrl += `&max-keys=${config.pageSize}`
+                        }
+                        if (this.continuationToken) {
+                            bucketListApiUrl += `&continuation-token=${encodePath(this.continuationToken)}`
+                        }
+                        let listBucketResultResponse = await fetch(bucketListApiUrl)
+                        let listBucketResultXml = await listBucketResultResponse.text()
+
+                        listBucketResult = new DOMParser().parseFromString(listBucketResultXml, "text/xml")
+                        if (!listBucketResult.querySelector('ListBucketResult > Delimiter')) {
+                            throw Error(`Bucket URL ${config.bucketUrl} is not a valid bucket API URL, response does not contain <ListBucketResult><Delimiter> tag.`)
+                        }
+                    } catch (error) {
+                        this.$buefy.notification.open({
+                            message: error.message?.escapeHTML(),
+                            type: 'is-danger',
+                            duration: 60000,
+                            position: 'is-bottom'
+                        })
+                        throw error
+                    }
+
+                    let nextContinuationTokenTag = listBucketResult.querySelector("NextContinuationToken")
+                    this.nextContinuationToken = nextContinuationTokenTag && nextContinuationTokenTag.textContent
+
+                    let commonPrefixes = [...listBucketResult.querySelectorAll("ListBucketResult > CommonPrefixes")]
+                        .map(tag => ({
+                            prefix: tag.querySelector('Prefix').textContent.removePrefix(config.rootPrefix)
+                        }))
+                        .filter(prefix => !config.keyExcludePatterns.find(pattern => pattern.test(prefix.prefix.removePrefix(config.rootPrefix))))
+                        .map(prefix => ({
+                            type: 'prefix',
+                            name: prefix.prefix.split('/').slice(-2)[0] + '/',
+                            prefix: prefix.prefix
+                        }))
+
+                    let contents = [...listBucketResult.querySelectorAll("ListBucketResult > Contents")]
+                        .map(tag => ({
+                            key: tag.querySelector('Key').textContent,
+                            size: parseInt(tag.querySelector('Size').textContent),
+                            dateModified: new Date(tag.querySelector('LastModified').textContent)
+                        }))
+                        .filter(content => content.key !== decodeURI(this.bucketPrefix))
+                        .filter(content => !config.keyExcludePatterns.find(pattern => pattern.test(content.key.removePrefix(config.rootPrefix))))
+                        .map(content => {
+                            if (content.key.endsWith('/') && !content.size) {
+                                return {
+                                    type: 'prefix',
+                                    name: content.key.split('/')[0] + '/',
+                                    prefix: `${this.pathPrefix}${content.key}`
+                                }
+                            }
+
+                            let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(content.key)}`
+                            let installUrl = undefined
+                            if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
+                                // generate manifest.plist install urls
+                                installUrl = `itms-services://?action=download-manifest&url=${encodePath(url)}`
+                            }
+                            return {
+                                type: 'content',
+                                name: content.key.split('/').slice(-1)[0],
+                                size: content.size,
+                                dateModified: content.dateModified,
+
+                                key: content.key,
+                                url,
+                                installUrl
+                            }
+                        })
+
+                    this.pathContentTableData = [...commonPrefixes, ...contents]
+                },
+                sortTableData(columnName) {
+                    return (rowA, rowB, isAsc) => {
+                        // prefixes always first
+                        if (rowA.type != rowB.type) {
+                            return rowA.type === 'prefix' ? -1 : 1
+                        }
+
+                        const valueA = rowA[columnName]
+                        const valueB = rowB[columnName]
+                        if (valueA != valueB) {
+                            if (valueA === undefined) {
+                                return isAsc ? -1 : 1
+                            }
+                            if (valueB === undefined) {
+                                return isAsc ? 1 : -1
+                            }
+                            return isAsc ?
+                                (valueA < valueB ? -1 : 1) :
+                                (valueA < valueB ? 1 : -1)
+                        }
+
+                        return 0
+                    }
+                },
+                formatBytes(size) {
+                    if (!size) {
+                        return '-'
+                    }
+                    const KB = 1024
+                    if (size < KB) {
+                        return size + '  B'
+                    }
+                    const MB = 1000000
+                    if (size < MB) {
+                        return (size / KB).toFixed(0) + ' KB'
+                    }
+                    const GB = 1000000000
+                    if (size < GB) {
+                        return (size / MB).toFixed(2) + ' MB'
+                    }
+                    return (size / GB).toFixed(2) + ' GB'
+                },
+                formatDateTime_date(date) {
+
+                    return date ? moment(date).format('ddd, DD. MMM YYYY') : '-'
+                },
+                formatDateTime_time(date) {
+                    return date ? moment(date).format('hh:mm:ss') : '-'
+                },
+                formatDateTime_relative(date) {
+                    return date ? moment(date).fromNow() : '-'
+                }
+            },
+            async mounted() {
+                window.onpopstate = () => this.pathPrefix = decodeURIComponent(window.location.hash).replace(/^#/, '')
+                window.onpopstate()
+                window.addEventListener('resize', () => {
+                    this.windowWidth = window.innerWidth
+                })
+
+                this.refresh()
+            },
+            async beforeUnmount() {
+                window.removeEventListener('resize')
+            }
+        })
+        app.use(Buefy.default, {defaultIconPack: 'fas'})
+        app.mount('#app')
+    }
 </script>
 </body>
 
