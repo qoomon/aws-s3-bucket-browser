@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.0.5 -->
+<!-- S3 Bucket Explorer Version: 3.0.6 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -65,7 +65,7 @@
             crossorigin="anonymous"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/zero-md@3?register" type="module"
-            integrity="sha384-rEobhniwlwAquQiUTy2McGJWpm0H1EpkURdLKoThh6Lv2fkuM2NPIX64ptgfC8Me" 
+            integrity="sha384-rEobhniwlwAquQiUTy2McGJWpm0H1EpkURdLKoThh6Lv2fkuM2NPIX64ptgfC8Me"
             crossorigin="anonymous"></script>
 
     <!-- Style -->
@@ -331,7 +331,7 @@
                                     v-if="props.row.type === 'content' && props.row.name.endsWith('.md')"
                                     type="is-text"
                                     tag="a"
-                                    :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}::preview`"
+                                    :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}?preview=markdown`"
                                     icon-left="image" size="is-medium"
                                     target="_blank"
                                     @click="blurActiveElement"
@@ -443,7 +443,7 @@
 
 <!-- Preview App -->
 <div id="preview" style="display: none;">
-    <zero-md id="preview-markdown" src="#">
+    <zero-md id="preview-markdown" src="#" style="display: none;">
         <template>
             <!-- Sensible host style defaults -->
             <style>
@@ -634,16 +634,27 @@
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
 
-    const initialPathPrefix = decodeURIComponent(window.location.hash).replace(/^#/, '') || ''
-    if (initialPathPrefix.endsWith('::preview')) {
+    const initialHashValue = decodeURIComponent(window.location.hash).replace(/^#/, '') || ''
+    const initialHashValueParams = new URLSearchParams(initialHashValue.replace(/^.*?(\?|$)/,'' ))
+    if (initialHashValueParams.get('preview')) {
         document.getElementById('app').remove()
-
-        const filePath = initialPathPrefix.replace(/::preview$/, '')
         document.getElementById('preview').style.display = 'block'
-        document.getElementById('preview-markdown').src = urlFromPathPrefix(filePath)
 
-        function urlFromPathPrefix(pathPrefix) {
-            return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(pathPrefix)}`
+        const filePath = initialHashValue.replace(/\?.*$/, '')
+        const fileUrl = urlFromFilePath(filePath)
+
+        const previewFormat = initialHashValueParams.get('preview')
+        switch (previewFormat) {
+            case 'markdown':
+                document.getElementById('preview-markdown').style.display = 'block'
+                document.getElementById('preview-markdown').src = fileUrl
+                break;
+            default:
+                throw new Error(`Unsupported preview format: ${previewFormat}`)
+        }
+
+        function urlFromFilePath(filePath) {
+            return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
         }
     } else {
         document.getElementById('preview').remove()
