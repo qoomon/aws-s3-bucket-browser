@@ -104,6 +104,7 @@
         #app .button.is-primary {
             background-color: var(--primary-color) !important;
         }
+
         #app .button.is-primary.is-outlined {
             background-color: transparent !important;
             border-color: var(--primary-color) !important;
@@ -122,6 +123,7 @@
             text-align: left;
             overflow: hidden;
         }
+
         #app .table .button.is-text.is-focused,
         #app .table .button.is-text.is-hovered,
         #app .table .button.is-text:focus,
@@ -133,20 +135,22 @@
         #app .buttons .field {
             margin-bottom: 0.5rem;
         }
+
         #app .button.is-text > span {
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         #app .button.is-primary:focus:not(:active) {
             box-shadow: inset 0px 0px 0px 0.1em #ffffffcc;
         }
 
         #app .input:focus:not(.is-danger),
-
         #app .select select:focus {
             border-color: var(--primary-color);
             box-shadow: none;
         }
+
         #app .select:not(.is-multiple):not(.is-loading)::after {
             border-color: var(--primary-color) !important;
         }
@@ -155,22 +159,26 @@
             display: flex;
             align-items: center;
         }
+
         #app .name-column-icon {
             display: block;
             flex-basis: 1.5rem;
             flex-grow: 0;
             flex-shrink: 0;
         }
+
         #app .name-column-buttons {
             display: flex;
             margin-left: auto;
         }
+
         #app .name-column-buttons > .button {
             height: 1em;
             height: auto;
             padding: 0em 0.6em;
             margin-left: 0.5em;
         }
+
         #app .name-column-details {
             display: flex;
             align-items: flex-end;
@@ -192,6 +200,7 @@
             text-align: center;
             color: darkgray;
         }
+
         #app .footer-bucket-url a {
             color: inherit;
         }
@@ -200,9 +209,11 @@
             #app .name-column::before {
                 display: none !important;
             }
+
             #app .name-column > div:first-child {
                 max-width: calc(100% - 5.5rem);
             }
+
             #app .size-column,
             #app .modified-column {
                 display: none !important;
@@ -443,7 +454,7 @@
 
 <!-- Preview App -->
 <div id="preview" style="display: none;">
-    <zero-md id="preview-markdown" src="#" style="display: none;">
+    <zero-md id="preview-markdown" src="#">
         <template>
             <!-- Sensible host style defaults -->
             <style>
@@ -456,6 +467,7 @@
                 :host([hidden]) {
                     display: none;
                 }
+
                 .markdown-body {
                     min-height: 100vh;
                     padding: 4.5rem max(calc(100% - max(1012px, min(1012px, 100%))) / 2, 2.5rem);
@@ -465,10 +477,12 @@
             <!-- GitHub markdown styles (light/dark) -->
             <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css"/>-->
             <!-- GitHub markdown styles (light) -->
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css"/>
+            <link rel="stylesheet"
+                  href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css"/>
 
             <!-- Highlightjs Github theme (light) -->
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"/>
+            <link rel="stylesheet"
+                  href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"/>
             <!-- Highlightjs Github theme (dark) -->
             <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" media="(prefers-color-scheme:dark)" /> -->
 
@@ -635,7 +649,7 @@
     document.getElementById('favicon').href = config.favicon
 
     const initialHashValue = decodeURIComponent(window.location.hash).replace(/^#/, '') || ''
-    const initialHashValueParams = new URLSearchParams(initialHashValue.replace(/^.*?(\?|$)/,'' ))
+    const initialHashValueParams = new URLSearchParams(initialHashValue.replace(/^.*?(\?|$)/, ''))
     if (initialHashValueParams.get('preview')) {
         document.getElementById('app').remove()
         document.getElementById('preview').style.display = 'block'
@@ -644,13 +658,18 @@
         const fileUrl = urlFromFilePath(filePath)
 
         const previewFormat = initialHashValueParams.get('preview')
+        const previewElement = document.querySelector(`#preview > #preview-${previewFormat}`);
+        ;// remove all other preview elements
+        [...document.querySelectorAll('#preview > *')]
+            .filter(element => element.id !== previewElement?.id)
+            .forEach(element => element.remove())
+        // set source of preview element
         switch (previewFormat) {
             case 'markdown':
-                document.getElementById('preview-markdown').style.display = 'block'
-                document.getElementById('preview-markdown').src = fileUrl
-                break;
+                previewElement.src = fileUrl
+                break
             default:
-                throw new Error(`Unsupported preview format: ${previewFormat}`)
+                alert(`Unsupported preview for ${previewFormat} files!`)
         }
 
         function urlFromFilePath(filePath) {
