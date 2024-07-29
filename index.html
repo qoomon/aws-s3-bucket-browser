@@ -1,9 +1,10 @@
-<!-- S3 Bucket Explorer Version: 3.0.7 -->
+<!-- S3 Bucket Explorer Version: 3.0.8 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
 
 <head>
+    <!-- Configuration -->
     <script>
         const config = {
             title: 'Bucket Browser', // prefix value with `HTML> ` to render as html, see subtitle
@@ -68,7 +69,7 @@
             integrity="sha384-rEobhniwlwAquQiUTy2McGJWpm0H1EpkURdLKoThh6Lv2fkuM2NPIX64ptgfC8Me"
             crossorigin="anonymous"></script>
 
-    <!-- Style -->
+    <!-- Explorer App Style -->
     <style>
         body {
             width: 100vw;
@@ -225,7 +226,7 @@
 <body>
 
 <!-- Explorer App-->
-<div id="app" v-cloak>
+<div id="app" style="display: none;">
     <div :style="cssVars">
         <!-- Header -->
         <div class="level">
@@ -569,7 +570,7 @@
     }
 </script>
 
-<!-- Main Script -->
+<!-- Config Script -->
 <script>
     const htmlPrefix = 'HTML>'
     if (config.title) {
@@ -652,9 +653,13 @@
 
     document.title = config.title
     document.getElementById('favicon').href = config.favicon
+</script>
 
+<!-- Main Script -->
+<script>
     const initialHashValue = decodeURIComponent(window.location.hash).replace(/^#/, '') || ''
     const initialHashValueParams = new URLSearchParams(initialHashValue.replace(/^.*?(\?|$)/, ''))
+    // preview mode
     if (initialHashValueParams.get('preview')) {
         document.getElementById('app').remove()
         document.getElementById('preview').style.display = 'block'
@@ -680,8 +685,11 @@
         function urlFromFilePath(filePath) {
             return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
         }
-    } else {
+    }
+    // explorer mode
+    else {
         document.getElementById('preview').remove()
+        document.getElementById('app').style.display = 'block'
 
         const app = Vue.createApp({
             data() {
