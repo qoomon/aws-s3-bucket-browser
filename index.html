@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.0.8 -->
+<!-- S3 Bucket Explorer Version: 3.1.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -12,6 +12,7 @@
             logo: 'https://qoomon.github.io/aws-s3-bucket-browser/logo.png',
             favicon: 'https://qoomon.github.io/aws-s3-bucket-browser/favicon.ico',
             primaryColor: '#167df0',
+            allowDownloadAll: true,
 
             bucketUrl: undefined,
             // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
@@ -69,6 +70,9 @@
             integrity="sha384-rEobhniwlwAquQiUTy2McGJWpm0H1EpkURdLKoThh6Lv2fkuM2NPIX64ptgfC8Me"
             crossorigin="anonymous"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js"></script>
+
+
     <!-- Explorer App Style -->
     <style>
         body {
@@ -88,11 +92,11 @@
             padding: 2.25rem 2.5rem;
         }
 
-        #app #breadcrumps {
+        #app #breadcrumbs {
             margin-right: .5em;
         }
 
-        #app #breadcrumps .button .icon:first-child:not(:last-child) {
+        #app #breadcrumbs .button .icon:first-child:not(:last-child) {
             margin-left: calc(-.5em - 1px);
             margin-right: calc(-.5em - 1px);
         }
@@ -110,6 +114,9 @@
             background-color: transparent !important;
             border-color: var(--primary-color) !important;
             color: var(--primary-color) !important;
+        }
+        #app .button.is-primary.is-outlined.is-loading::after {
+            border-color: transparent transparent var(--primary-color) var(--primary-color) !important;
         }
 
         #app .table .button.is-text {
@@ -166,6 +173,8 @@
             flex-basis: 1.5rem;
             flex-grow: 0;
             flex-shrink: 0;
+            align-content: center;
+            text-align: center;
         }
 
         #app .name-column-buttons {
@@ -245,9 +254,9 @@
             <!-- Navigation Bar -->
             <div class="container is-clearfix" style="margin-bottom: 1rem;">
                 <div class="buttons is-pulled-left" style="width: 100%;">
-                    <div id="breadcrumps">
-                        <!-- Prefix Breadcrumps -->
-                        <b-button v-for="(breadcrump, index) in pathBreadcrumps" v-bind:key="breadcrump.url"
+                    <div id="breadcrumbs">
+                        <!-- Prefix Breadcrumbs -->
+                        <b-button v-for="(breadcrump, index) in pathBreadcrumbs" v-bind:key="breadcrump.url"
                                   type="is-primary" rounded
                                   tag="a"
                                   :href="breadcrump.url"
@@ -260,6 +269,7 @@
                             <template v-if="index > 0">{{ breadcrump.name }}</template>
                         </b-button>
                     </div>
+
                     <div class="container" style="display: flex;">
                         <!-- Prefix Search Input -->
                         <b-field :type="!validBucketPrefix(searchPrefix) ? 'is-danger' : ''"
@@ -280,17 +290,29 @@
                             </b-input>
                         </b-field>
 
+                        <!-- Download All Button -->
+                        <b-button
+                                v-if="config.allowDownloadAll && pathContentTableData.filter(item => item.type === 'content').length >= 2"
+                                type="is-primary" outlined rounded :loading="downloadAllFilesProgress !== null"
+                                icon-pack="fas"
+                                icon-left="download"
+                                @click="downloadAllFiles"
+                                style="margin-left: 0.7rem;"
+                        ></b-button>
+
                         <!-- Paginating Buttons -->
                         <div class="container"
-                             v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+                             v-if="nextContinuationToken || previousContinuationTokens.length > 0"
                              style="display: contents;">
+                            <div style="margin-left: 0.6rem;"></div>
+
                             <b-button
                                     type="is-primary" rounded
                                     icon-pack="fas"
                                     icon-left="angle-left"
                                     @click="previousPage"
                                     :disabled="previousContinuationTokens.length === 0"
-                                    style="margin-left: 2rem;">
+                                    >
                             </b-button>
                             <b-button
                                     type="is-primary" rounded
@@ -304,6 +326,14 @@
                     </div>
                 </div>
             </div>
+
+            <b-progress v-if="downloadAllFilesProgress !== null"
+                        type="is-info"
+                        :value="downloadAllFilesProgress * 110"
+                        show-value
+            >{{ new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 1})
+                    .format(downloadAllFilesProgress) }}
+            </b-progress>
 
             <!-- Content Table -->
             <b-table
@@ -323,8 +353,8 @@
                         <b-icon
                                 pack="far"
                                 :icon="props.row.type === 'prefix' ? 'folder' : 'file-alt'"
+                                size="is-medium"
                                 class="name-column-icon"
-                                style="text-align: left;"
                         >
                         </b-icon>
 
@@ -338,26 +368,25 @@
                         </b-button>
 
                         <div class="name-column-buttons">
-                            <!-- Markdown Preview Button -->
-                            <b-button
-                                    v-if="props.row.type === 'content' && props.row.name.endsWith('.md')"
-                                    type="is-text"
-                                    tag="a"
-                                    :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}?preview=markdown`"
-                                    icon-left="image" size="is-medium"
-                                    target="_blank"
-                                    @click="blurActiveElement"
-                            ></b-button>
+                            <template v-if="props.row.type === 'content'">
+                                <!-- Markdown Preview Button -->
+                                <b-button v-if="props.row.name.endsWith('.md')"
+                                          tag="a" type="is-text"
+                                          icon-left="image" size="is-medium"
+                                          :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}?preview=markdown`"
+                                          target="_blank"
 
-                            <!-- Install Button -->
-                            <b-button
-                                    v-if="props.row.installUrl"
-                                    type="is-primary" rounded outlined
-                                    tag="a"
-                                    :href="props.row.installUrl"
-                                    @click="blurActiveElement"
-                            >Install
-                            </b-button>
+                                ></b-button>
+
+                                <!-- Install Button -->
+                                <b-button v-if="props.row.installUrl"
+                                          tag="a" type="is-primary" rounded outlined
+                                          :href="props.row.installUrl"
+                                          target="_blank"
+                                          @click="blurActiveElement"
+                                >Install
+                                </b-button>
+                            </template>
                         </div>
                     </div>
 
@@ -703,7 +732,9 @@
                     continuationToken: undefined,
                     nextContinuationToken: undefined,
 
-                    windowWidth: window.innerWidth
+                    windowWidth: window.innerWidth,
+
+                    downloadAllFilesProgress: null,
                 }
             },
             computed: {
@@ -712,7 +743,7 @@
                         '--primary-color': this.config.primaryColor
                     }
                 },
-                pathBreadcrumps() {
+                pathBreadcrumbs() {
                     return ['', ...(this.pathPrefix.match(/[^/]*\//g) || [])]
                         .map((pathPrefixPart, index, pathPrefixParts) => ({
                             name: decodeURI(pathPrefixPart),
@@ -766,6 +797,58 @@
                         this.continuationToken = this.nextContinuationToken
                         this.refresh()
                     }
+                },
+                async downloadAllFiles() {
+                    const archiveFiles = this.pathContentTableData
+                        .filter(item => item.type === 'content')
+                        .map(item => item.url);
+
+                    this.downloadAllFilesProgress = 0;
+
+                    console.debug('create archive...')
+                    const archiveData = []
+                    const archive = new fflate.Zip((err, data, final) => {
+                        if (err) throw err;
+                        archiveData.push(data);
+                    });
+
+                    let totalContentLength = 0;
+                    let totalReceivedLength = 0;
+
+                    await Promise.all(archiveFiles.map(async (url) => {
+                        console.debug(`downloading ${url}...`);
+
+                        const fileName = url.split('/').pop(); // Extract file name from URL
+                        const fileStream = new fflate.ZipPassThrough(fileName);
+                        archive.add(fileStream);
+
+                        const fileResponse = await fetch(url);
+                        totalContentLength += parseInt(fileResponse.headers.get('Content-Length'));
+                        const fileReader = fileResponse.body.getReader();
+
+                        while(true) {
+                            const {done, value} = await fileReader.read();
+                            if (done) {
+                                fileStream.push(new Uint8Array(), true);
+                                break;
+                            }
+                            fileStream.push(new Uint8Array(value));
+
+                            totalReceivedLength += value.length;
+                            this.downloadAllFilesProgress = totalReceivedLength / totalContentLength;
+                        }
+                    })).then(() => archive.end());
+                    console.debug('done!')
+
+                    const archiveBlob = new Blob(archiveData, {type: 'application/octet-stream'});
+                    const objectUrl = window.URL.createObjectURL(archiveBlob);
+                    const link = document.createElement('a');
+                    link.href = objectUrl;
+                    link.download = `archive.zip`;
+                    link.click();
+                    window.URL.revokeObjectURL(objectUrl);
+
+                    this.downloadAllFilesProgress = null;
                 },
                 async refresh() {
                     let listBucketResult
