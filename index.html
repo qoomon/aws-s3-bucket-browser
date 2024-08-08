@@ -77,7 +77,9 @@
             integrity="sha384-HqC294x+jARmk/wUrzXlnRpiZrmiHJ4BIKph0mrcMJ/cLuMkNDHY0IjbDanCNhcU"
             crossorigin="anonymous"></script>
 
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0.31/dist/fancybox.css">
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0.31/dist/fancybox.umd.js"></script>
+    
     <!-- Explorer App Style -->
     <style>
         body {
@@ -234,6 +236,12 @@
                 display: none !important;
             }
         }
+        
+        /* Styles for Fancybox */
+        .fancybox__container {
+            z-index: 10000;
+        }
+
     </style>
 </head>
 
@@ -377,11 +385,14 @@
                                 <!-- Markdown Preview Button -->
                                 <b-button v-if="props.row.name.endsWith('.md')"
                                           tag="a" type="is-text"
-                                          icon-left="image" size="is-medium"
+                                          :class="['mdi', 'mdi-file-document-outline']" size="is-medium"
                                           :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}?preview=markdown`"
-                                          target="_blank"
+                                          target="_blank"></b-button>
 
-                                ></b-button>
+									<!-- Image Preview Button -->
+									<b-button v-if="['jpg', 'jpeg', 'png'].includes(props.row.name.split('.').pop().toLowerCase())" tag="a" type="is-text"
+									   :class="['mdi', 'mdi-image']" size="is-medium"
+									    @click="showImagePreview(props.row.url)"></b-button>
 
                                 <!-- Install Button -->
                                 <b-button v-if="props.row.installUrl"
@@ -530,6 +541,13 @@
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css"/>
         </template>
     </zero-md>
+</div>
+
+<!-- Gallery container -->
+<div id="gallery" style="display: none;">
+    <a v-for="(image, index) in previewImages" :key="index" data-fancybox="gallery" :href="image.url" :data-caption="image.caption">
+        <img :src="image.url" alt="Image" style="display: none;">
+    </a>
 </div>
 
 <!-- GitHub Corner -->
@@ -695,26 +713,22 @@
     const initialHashValueParams = new URLSearchParams(initialHashValue.replace(/^.*?(\?|$)/, ''))
     // preview mode
     if (initialHashValueParams.get('preview')) {
-        document.getElementById('app').remove()
-        document.getElementById('preview').style.display = 'block'
-
         const filePath = initialHashValue.replace(/\?.*$/, '')
         const fileUrl = urlFromFilePath(filePath)
 
         const previewFormat = initialHashValueParams.get('preview')
-        const previewElement = document.querySelector(`#preview > #preview-${previewFormat}`);
-        ;// remove all other preview elements
-        [...document.querySelectorAll('#preview > *')]
-            .filter(element => element.id !== previewElement?.id)
-            .forEach(element => element.remove())
-        // set source of preview element
-        switch (previewFormat) {
-            case 'markdown':
-                previewElement.src = fileUrl
-                break
-            default:
-                alert(`Unsupported preview for ${previewFormat} files!`)
-        }
+ 
+    switch (previewFormat) {
+        case 'markdown':
+            document.getElementById('preview').style.display = 'block'
+            document.querySelector(`#preview-markdown`).src = fileUrl
+            break
+        case 'images':
+            app.showImagePreview(fileUrl)
+            break
+        default:
+            alert(`Unsupported preview for ${previewFormat} files!`)
+    }
 
         function urlFromFilePath(filePath) {
             return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
@@ -803,6 +817,32 @@
                         this.refresh()
                     }
                 },
+                showImagePreview(fileUrl) {
+                    this.previewImages = this.pathContentTableData
+                        .filter(item => ['jpg', 'jpeg', 'png'].includes(item.name.split('.').pop().toLowerCase()))
+                        .map(item => ({
+                            url: decodeURIComponent(item.url), // Розкодовуємо URL
+                            caption: item.name // Додаємо назву як підпис
+                        }));
+
+                    console.log("Preview images:", this.previewImages); // Перевірка масиву зображень
+
+                    this.$nextTick(() => {
+                        Fancybox.show(this.previewImages.map(image => ({
+                            src: image.url,
+                            caption: image.caption
+                        })), {
+                            on: {
+                                ready: (fancybox) => {
+                                    const index = fancybox.items.findIndex(item => item.src === decodeURIComponent(fileUrl));
+                                    if (index !== -1) {
+                                        fancybox.jumpTo(index);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                },
                 async downloadAllFiles() {
                     const archiveFiles = this.pathContentTableData
                         .filter(item => item.type === 'content')
@@ -819,6 +859,16 @@
 
                     let totalContentLength = 0;
                     let totalReceivedLength = 0;
+
+                    let archiveName = 'archive';
+					
+                    try {
+                         const firstUrl = archiveFiles[0];
+                         archiveName = decodeURIComponent(firstUrl.split('/').slice(-2, -1)[0]);
+                        if (!archiveName) throw new Error('Folder name is empty');
+                    } catch (error) {
+                        console.error('Error determining folder name, using default name:', error);
+                    }
 
                     await Promise.all(archiveFiles.map(async (url) => {
                         console.debug(`downloading ${url}...`);
@@ -849,7 +899,7 @@
                     const objectUrl = window.URL.createObjectURL(archiveBlob);
                     const link = document.createElement('a');
                     link.href = objectUrl;
-                    link.download = `archive.zip`;
+                    link.download = `${archiveName}.zip`;
                     link.click();
                     window.URL.revokeObjectURL(objectUrl);
 
