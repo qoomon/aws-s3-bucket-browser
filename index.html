@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.1.1 -->
+<!-- S3 Bucket Explorer Version: 3.1.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -852,7 +852,10 @@
                             fileStream.push(new Uint8Array(value));
 
                             totalReceivedLength += value.length;
-                            this.downloadAllFilesProgress = totalReceivedLength / totalContentLength;
+                            this.downloadAllFilesProgress = (
+                                (totalReceivedLength / totalContentLength) +
+                                (this.downloadAllFilesReceivedCount / this.downloadAllFilesCount)
+                            ) / 2;
                         }
                         this.downloadAllFilesReceivedCount++;
                     })).then(() => archive.end());
