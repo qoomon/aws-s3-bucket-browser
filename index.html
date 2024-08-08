@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.2.0 -->
+<!-- S3 Bucket Explorer Version: 3.1.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -886,16 +886,8 @@
                     let totalContentLength = 0;
                     let totalReceivedLength = 0;
 
-                    let archiveName = 'archive';
-
-                    try {
-                        const firstUrl = archiveFiles[0];
-                        archiveName = decodeURIComponent(firstUrl.split('/').slice(-2, -1)[0]);
-                        if (!archiveName) throw new Error('Folder name is empty');
-                    } catch (error) {
-                        console.error('Error determining folder name, using default name:', error);
-                    }
-
+                    const archiveName = this.pathPrefix.split('/')
+                        .filter(part => part.trim()).pop();
                     console.debug(`create archive for ${archiveName}...`)
                     const archiveData = []
                     const archive = new fflate.Zip((err, data, final) => {
