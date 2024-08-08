@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.1.2 -->
+<!-- S3 Bucket Explorer Version: 3.2.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -78,8 +78,10 @@
             crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0.31/dist/fancybox.css">
-    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0.31/dist/fancybox.umd.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0.31/dist/fancybox.umd.js"
+            integrity="sha384-mfITPNdkUxVtTV4zhg4SDrxOL/aZBoz/p9adHFmaCoLDa43yghU46m5oEkJzLsav"
+            crossorigin="anonymous"></script>
+
     <!-- Explorer App Style -->
     <style>
         body {
@@ -237,10 +239,10 @@
                 display: none !important;
             }
         }
-        
+
         /* Styles for Fancybox */
         .fancybox__container {
-            z-index: 10000;
+            z-index: 9999;
         }
 
     </style>
@@ -386,17 +388,12 @@
 
                         <div class="name-column-buttons">
                             <template v-if="props.row.type === 'content'">
-                                <!-- Markdown Preview Button -->
-                                <b-button v-if="props.row.name.endsWith('.md')"
+                                <!-- Preview Button -->
+                                <b-button v-if="isPreviewSupported(props.row.url)"
                                           tag="a" type="is-text"
-                                          :class="['mdi', 'mdi-file-document-outline']" size="is-medium"
-                                          :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}?preview=markdown`"
-                                          target="_blank"></b-button>
-
-									<!-- Image Preview Button -->
-									<b-button v-if="['jpg', 'jpeg', 'png'].includes(props.row.name.split('.').pop().toLowerCase())" tag="a" type="is-text"
-									   :class="['mdi', 'mdi-image']" size="is-medium"
-									    @click="showImagePreview(props.row.url)"></b-button>
+                                          icon-pack="far"
+                                          icon-left="image" size="is-medium"
+                                          @click="showPreview(props.row.url)"></b-button>
 
                                 <!-- Install Button -->
                                 <b-button v-if="props.row.installUrl"
@@ -504,6 +501,8 @@
 
 <!-- Preview App -->
 <div id="preview" style="display: none;">
+
+    <!-- Markdown container   -->
     <zero-md id="preview-markdown" src="#">
         <template>
             <!-- Sensible host style defaults -->
@@ -545,14 +544,16 @@
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css"/>
         </template>
     </zero-md>
+
+    <!-- Gallery container -->
+    <div id="gallery" style="display: none;">
+        <a v-for="(image, index) in previewImages" :key="index" data-fancybox="gallery" :href="image.url"
+           :data-caption="image.caption">
+            <img :src="image.url" alt="Image" style="display: none;">
+        </a>
+    </div>
 </div>
 
-<!-- Gallery container -->
-<div id="gallery" style="display: none;">
-    <a v-for="(image, index) in previewImages" :key="index" data-fancybox="gallery" :href="image.url" :data-caption="image.caption">
-        <img :src="image.url" alt="Image" style="display: none;">
-    </a>
-</div>
 
 <!-- GitHub Corner -->
 <a href="https://github.com/qoomon/aws-s3-bucket-browser" class="github-corner" aria-label="View source on GitHub">
@@ -721,18 +722,18 @@
         const fileUrl = urlFromFilePath(filePath)
 
         const previewFormat = initialHashValueParams.get('preview')
- 
-    switch (previewFormat) {
-        case 'markdown':
-            document.getElementById('preview').style.display = 'block'
-            document.querySelector(`#preview-markdown`).src = fileUrl
-            break
-        case 'images':
-            app.showImagePreview(fileUrl)
-            break
-        default:
-            alert(`Unsupported preview for ${previewFormat} files!`)
-    }
+
+        switch (previewFormat) {
+            case 'markdown':
+                document.getElementById('preview').style.display = 'block'
+                document.querySelector(`#preview-markdown`).src = fileUrl
+                break
+            case 'images':
+                app.showImagePreview(fileUrl)
+                break
+            default:
+                alert(`Unsupported preview for ${previewFormat} files!`)
+        }
 
         function urlFromFilePath(filePath) {
             return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
@@ -742,6 +743,10 @@
     else {
         document.getElementById('preview').remove()
         document.getElementById('app').style.display = 'block'
+
+        function matchFileEnding(fileUrl, endings) {
+            return endings.some(ending => fileUrl.toLowerCase().endsWith(ending.toLowerCase()))
+        }
 
         const app = Vue.createApp({
             data() {
@@ -756,6 +761,9 @@
                     nextContinuationToken: undefined,
 
                     windowWidth: window.innerWidth,
+
+                    supportedImagePreviewFormats: ['jpg', 'jpeg', 'png'],
+                    supportedMarkdownPreviewFormats: ['md'],
 
                     downloadAllFilesCount: null,
                     downloadAllFilesReceivedCount: null,
@@ -823,13 +831,24 @@
                         this.refresh()
                     }
                 },
-                showImagePreview(fileUrl) {
+                isPreviewSupported(fileUrl) {
+                    return matchFileEnding(fileUrl, this.supportedImagePreviewFormats) ||
+                        matchFileEnding(fileUrl, this.supportedMarkdownPreviewFormats)
+                },
+                showPreview(fileUrl) {
+                    if (matchFileEnding(fileUrl, this.supportedImagePreviewFormats)) {
+                        this.showImagePreview(fileUrl)
+                    } else if (matchFileEnding(fileUrl, this.supportedMarkdownPreviewFormats)) {
+                        this.showMarkdownPreview(fileUrl)
+                    }
+                },
+                showImagePreview(url) {
                     this.previewImages = this.pathContentTableData
-                        .filter(item => ['jpg', 'jpeg', 'png'].includes(item.name.split('.').pop().toLowerCase()))
+                        .filter(item => this.supportedImagePreviewFormats.some(format => fileUrl.toLowerCase().endsWith(format)))
                         .map(item => ({
-                            url: decodeURIComponent(item.url), // Розкодовуємо URL
-                            caption: item.name // Додаємо назву як підпис
-                        }));
+                            url: decodeURIComponent(item.url),
+                            caption: item.name
+                        })).unshift(url);
 
                     console.log("Preview images:", this.previewImages); // Перевірка масиву зображень
 
@@ -849,9 +868,13 @@
                         });
                     });
                 },
+                showMarkdownPreview(url) {
+                    window.open(
+                        `#${url.replace(config.bucketUrl, '').replace(/^\//, '')}?preview=markdown`,
+                        '_blank'
+                    ).focus()
+                },
                 async downloadAllFiles() {
-
-
                     const archiveFiles = this.pathContentTableData
                         .filter(item => item.type === 'content')
                         .map(item => item.url);
@@ -864,15 +887,15 @@
                     let totalReceivedLength = 0;
 
                     let archiveName = 'archive';
-					
+
                     try {
-                         const firstUrl = archiveFiles[0];
-                         archiveName = decodeURIComponent(firstUrl.split('/').slice(-2, -1)[0]);
+                        const firstUrl = archiveFiles[0];
+                        archiveName = decodeURIComponent(firstUrl.split('/').slice(-2, -1)[0]);
                         if (!archiveName) throw new Error('Folder name is empty');
                     } catch (error) {
                         console.error('Error determining folder name, using default name:', error);
                     }
-                  
+
                     console.debug(`create archive for ${archiveName}...`)
                     const archiveData = []
                     const archive = new fflate.Zip((err, data, final) => {
