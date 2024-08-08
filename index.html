@@ -843,26 +843,51 @@
                     }
                 },
                 showImagePreview(url) {
+                    if (Fancybox.getInstance()) {
+                        Fancybox.close();
+                    }
                     this.previewImages = this.pathContentTableData
-                        .filter(item => this.supportedImagePreviewFormats.some(format => fileUrl.toLowerCase().endsWith(format)))
+                        .filter(item => this.supportedImagePreviewFormats.some(format => item.url?.toLowerCase().endsWith(format)))
                         .map(item => ({
-                            url: decodeURIComponent(item.url),
+                            url: item.url,
                             caption: item.name
-                        })).unshift(url);
+                        }));
 
-                    console.log("Preview images:", this.previewImages); // Перевірка масиву зображень
+                    console.log("Preview images:", this.previewImages);
 
                     this.$nextTick(() => {
                         Fancybox.show(this.previewImages.map(image => ({
                             src: image.url,
-                            caption: image.caption
+                            caption: image.caption,
+                            preload: false
                         })), {
                             on: {
-                                ready: (fancybox) => {
-                                    const index = fancybox.items.findIndex(item => item.src === decodeURIComponent(fileUrl));
+                                "Carousel.ready": (fancybox) => {
+                                    const index = fancybox.carousel.slides.findIndex(slide => slide.src === url);
                                     if (index !== -1) {
-                                        fancybox.jumpTo(index);
+                                        fancybox.carousel.slideTo(index);
                                     }
+                                }
+                            },
+                            Thumbs: {
+                                type: "classic"
+                            },
+                            Carousel: {
+                                infinite: false,
+                            },
+                            Toolbar: {
+                                display: {
+                                    left: ["infobar"],
+                                    middle: [
+                                        "zoomIn",
+                                        "zoomOut",
+                                        "toggle1to1",
+                                        "rotateCCW",
+                                        "rotateCW",
+                                        "flipX",
+                                        "flipY"
+                                    ],
+                                    right: ["slideshow", "download", "thumbs", "close"]
                                 }
                             }
                         });
@@ -886,8 +911,8 @@
                     let totalContentLength = 0;
                     let totalReceivedLength = 0;
 
-                    const archiveName = this.pathPrefix.split('/')
-                        .filter(part => part.trim()).pop();
+                    const archiveName = decodeURIComponent(this.pathPrefix.split('/')
+                        .filter(part => part.trim()).pop());
                     console.debug(`create archive for ${archiveName}...`)
                     const archiveData = []
                     const archive = new fflate.Zip((err, data, final) => {
