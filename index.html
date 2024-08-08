@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.1.0 -->
+<!-- S3 Bucket Explorer Version: 3.1.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -122,6 +122,7 @@
             border-color: var(--primary-color) !important;
             color: var(--primary-color) !important;
         }
+
         #app .button.is-primary.is-outlined.is-loading::after {
             border-color: transparent transparent var(--primary-color) var(--primary-color) !important;
         }
@@ -325,7 +326,7 @@
                                     icon-left="angle-left"
                                     @click="previousPage"
                                     :disabled="previousContinuationTokens.length === 0"
-                                    >
+                            >
                             </b-button>
                             <b-button
                                     type="is-primary" rounded
@@ -342,10 +343,13 @@
 
             <b-progress v-if="downloadAllFilesProgress !== null"
                         type="is-info"
-                        :value="downloadAllFilesProgress * 110"
+                        :value="downloadAllFilesProgress * 105"
                         show-value
-            >{{ new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 1})
-                    .format(downloadAllFilesProgress) }}
+                        style="margin-bottom: 1rem;"
+            >
+                <div style="width: 70vw; display: flex; justify-content: space-around;">
+                    <span>{{ `${downloadAllFilesReceivedCount} / ${downloadAllFilesCount} Files` }}</span>
+                </div>
             </b-progress>
 
             <!-- Content Table -->
@@ -753,6 +757,8 @@
 
                     windowWidth: window.innerWidth,
 
+                    downloadAllFilesCount: null,
+                    downloadAllFilesReceivedCount: null,
                     downloadAllFilesProgress: null,
                 }
             },
@@ -844,18 +850,15 @@
                     });
                 },
                 async downloadAllFiles() {
+
+
                     const archiveFiles = this.pathContentTableData
                         .filter(item => item.type === 'content')
                         .map(item => item.url);
 
+                    this.downloadAllFilesCount = archiveFiles.length;
+                    this.downloadAllFilesReceivedCount = 0;
                     this.downloadAllFilesProgress = 0;
-
-                    console.debug('create archive...')
-                    const archiveData = []
-                    const archive = new fflate.Zip((err, data, final) => {
-                        if (err) throw err;
-                        archiveData.push(data);
-                    });
 
                     let totalContentLength = 0;
                     let totalReceivedLength = 0;
@@ -869,11 +872,18 @@
                     } catch (error) {
                         console.error('Error determining folder name, using default name:', error);
                     }
+                  
+                    console.debug(`create archive for ${archiveName}...`)
+                    const archiveData = []
+                    const archive = new fflate.Zip((err, data, final) => {
+                        if (err) throw err;
+                        archiveData.push(data);
+                    });
 
                     await Promise.all(archiveFiles.map(async (url) => {
-                        console.debug(`downloading ${url}...`);
-
-                        const fileName = url.split('/').pop(); // Extract file name from URL
+                        const fileName = url.split('/')
+                            .filter(part => part.trim()).pop();
+                        console.debug(`downloading ${fileName}...`);
                         const fileStream = new fflate.ZipPassThrough(fileName);
                         archive.add(fileStream);
 
@@ -881,7 +891,7 @@
                         totalContentLength += parseInt(fileResponse.headers.get('Content-Length'));
                         const fileReader = fileResponse.body.getReader();
 
-                        while(true) {
+                        while (true) {
                             const {done, value} = await fileReader.read();
                             if (done) {
                                 fileStream.push(new Uint8Array(), true);
@@ -890,8 +900,12 @@
                             fileStream.push(new Uint8Array(value));
 
                             totalReceivedLength += value.length;
-                            this.downloadAllFilesProgress = totalReceivedLength / totalContentLength;
+                            this.downloadAllFilesProgress = (
+                                (totalReceivedLength / totalContentLength) +
+                                (this.downloadAllFilesReceivedCount / this.downloadAllFilesCount)
+                            ) / 2;
                         }
+                        this.downloadAllFilesReceivedCount++;
                     })).then(() => archive.end());
                     console.debug('done!')
 
@@ -903,6 +917,8 @@
                     link.click();
                     window.URL.revokeObjectURL(objectUrl);
 
+                    this.downloadAllFilesCount = null;
+                    this.downloadAllFilesReceivedCount = null;
                     this.downloadAllFilesProgress = null;
                 },
                 async refresh() {
