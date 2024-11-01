@@ -8,7 +8,7 @@ Single HTML file to browse AWS S3 buckets
 * Compatible Providers: [![GCP](https://www.google.com/s2/favicons?sz=16&domain=cloud.google.com)](https://cloud.google.com) [![IBM](https://www.google.com/s2/favicons?sz=16&domain=ibm.com)](https://ibm.com/cloud) [![DigitalOcean](https://www.google.com/s2/favicons?sz=161&domain=digitalocean.com)](https://digitalocean.com)
 * List all files in a table view
 * Treat and display `/` in keys as folders
-* Render preview for Makrdown files
+* Render preview for Markdown files
 * Show `Install` button for `manifest.plist` on iOS devices
 
 ## Installation
@@ -82,7 +82,7 @@ Single HTML file to browse AWS S3 buckets
       }
       ```
 * ##### ⚠️ Ensure Bucket CORS
-  * Depending on your setup you may need need to ensure following `CORS Configuration`
+  * Depending on your setup you may need to ensure following `CORS Configuration`
   * Go to `https://s3.console.aws.amazon.com/s3/buckets/<YOUR BUCKET NAME>/?tab=permissions`
   * Grant Cross Origin Access by following `CORS Configuration`, replace `http://www.example.com` by your address of bucket browser `index.html` 
     * e.g `http://example.s3-website-eu-central-1.amazonaws.com/index.html`
@@ -131,7 +131,7 @@ Single HTML file to browse AWS S3 buckets
 <details>
 <summary>Click me</summary>
  
-If you use CloudFront in upfront of your S3 bucket ensure following CloudFront settings.
+If you use CloudFront in front of your S3 bucket ensure following CloudFront settings.
 - Allowed/Cached HTTP Methods: `GET`, `HEAD`, `OPTIONS`
 - Cached Based on Selected Headers: `Whitelist`
   - `Access-Control-Request-Headers`
