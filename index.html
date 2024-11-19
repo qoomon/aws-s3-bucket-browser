@@ -50,11 +50,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
           integrity="sha384-HphS8cQyN+eYiJ5PMbzShG6qZdRtvHPVLPkYb8JwMkmNgaIxrFVDhQe3jIbq3EZ2"
           crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.2/css/all.css"
-          integrity="sha384-PPIZEGYM1v8zp5Py7UjFb79S58UeqCL9pYVnVPURKEqvioPROaVAJKKLzvH2rDnI"
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.7.0/css/all.css"
+          integrity="sha384-nMrp5ZsUTqQhbYtRk9ykIA4NlAIb530sj9RpfUkoGv/2gV+x0ZzFdUnT7Q8J8EgH"
           crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.32/dist/vue.global.prod.js"
-            integrity="sha384-dABb4ekX7QBOUdIIKzqjXGEapo0jlc8DxsRNpJs1DtDCvg1d0hatybOPLMrZJHer"
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"
+            integrity="sha384-W/1Fp/LgAYO/oTn9Gs+PbeWuMuq1eQCnUMPCeg8POmMYchhzxctjEqtbiCIxDOON"
             crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ntohq/buefy-next@0.1.4/dist/buefy.min.css"
@@ -69,8 +69,8 @@
             integrity="sha384-jzJ+sNWbKe71gDLLfQKgdtslQjhK70oKLFN+wmwxyg6mQN7Vem+wzce4pryF0HP/"
             crossorigin="anonymous"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/zero-md@3.1.2?register" type="module"
-            integrity="sha384-pC9TgzoLph8mmd0K9PwH5vJbK6Be5F2opR6JOA6MivxsU8lL3uIRQayAwvrDtiGE"
+    <script src="https://cdn.jsdelivr.net/npm/zero-md@3.1.6?register" type="module"
+            integrity="sha384-4yM8tBaev5eSstaMNWa2d8LiZsdtjDIrnLw7UJifOdyCQFisUeavYGRpF5PZbba8"
             crossorigin="anonymous"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js"
@@ -990,11 +990,11 @@
                     if (size < KB) {
                         return size + '  B'
                     }
-                    const MB = 1000000
+                    const MB = 1048576
                     if (size < MB) {
                         return (size / KB).toFixed(0) + ' KB'
                     }
-                    const GB = 1000000000
+                    const GB = 1073741824
                     if (size < GB) {
                         return (size / MB).toFixed(2) + ' MB'
                     }
