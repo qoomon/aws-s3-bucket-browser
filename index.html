@@ -986,15 +986,15 @@
                     if (!size) {
                         return '-'
                     }
-                    const KB = 1000
+                    const KB = 1024
                     if (size < KB) {
                         return size + '  B'
                     }
-                    const MB = 1000000
+                    const MB = 1048576
                     if (size < MB) {
                         return (size / KB).toFixed(0) + ' KB'
                     }
-                    const GB = 1000000000
+                    const GB = 1073741824
                     if (size < GB) {
                         return (size / MB).toFixed(2) + ' MB'
                     }
