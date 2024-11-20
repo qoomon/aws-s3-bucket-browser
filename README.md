@@ -1,4 +1,4 @@
-# AWS S3 Bucket Browser [![starline](https://github-starline.vercel.app/qoomon/aws-s3-bucket-browser)](https://github.com/qoomon/starline)
+# AWS S3 Bucket Browser [![starline](https://starlines.qoo.monster/assets/qoomon/aws-s3-bucket-browser)](https://github.com/qoomon/starlines)
 
 ![-](favicon.ico)
 
