@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.1.3 -->
+<!-- S3 Bucket Explorer Version: 3.2.0 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -47,6 +47,8 @@
     <link id="favicon" rel="shortcut icon"/>
     <title>Bucket Browser</title>
 
+    <script>window.process = {env: {NODE_ENV: 'production'}};</script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
           integrity="sha384-HphS8cQyN+eYiJ5PMbzShG6qZdRtvHPVLPkYb8JwMkmNgaIxrFVDhQe3jIbq3EZ2"
           crossorigin="anonymous">
@@ -60,7 +62,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/buefy@1.0.1/dist/buefy.min.css"
           integrity="sha384-emTiB911+IpxcPPEDgfW2BVy+IbeX4uwaQWn7vYxzO+HOI1aH6q6Zop1rZM5mY4U"
           crossorigin="anonymous">
-    <script>window.process = {env: {NODE_ENV: 'production'}};</script>
+
     <script src="https://cdn.jsdelivr.net/npm/buefy@1.0.1/dist/buefy.min.js"
             integrity="sha384-fW1ef2K4IPoLF6PH/tlGxZYb5Bd2qob7p8QRxNhqH8IEvkhRUKJELHBqwwAhJf+V"
             crossorigin="anonymous"></script>
@@ -69,14 +71,14 @@
             integrity="sha384-jzJ+sNWbKe71gDLLfQKgdtslQjhK70oKLFN+wmwxyg6mQN7Vem+wzce4pryF0HP/"
             crossorigin="anonymous"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/zero-md@3.1.7?register" type="module"
-            integrity="sha384-hcoybjvyFON6kBV8RIXEyjpe9bf9+la+B1hScRb+pmv/kaux4UHBD3kyG7OjBRdp"
-            crossorigin="anonymous"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js"
             integrity="sha384-HqC294x+jARmk/wUrzXlnRpiZrmiHJ4BIKph0mrcMJ/cLuMkNDHY0IjbDanCNhcU"
             crossorigin="anonymous"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/vue-files-preview@1.0.41/umd/vue-files-preview.umd.js"
+            integrity="sha384-/9EzFuSPCZgaWZ6WZG6nAQCnUzGrHwBTNYkQupo/cgagAl9tm2vixX25E0po+nEj"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-files-preview@1.0.41/umd/style.css">
 
     <!-- Explorer App Style -->
     <style>
@@ -378,13 +380,11 @@
 
                         <div class="name-column-buttons">
                             <template v-if="props.row.type === 'content'">
-                                <!-- Markdown Preview Button -->
-                                <b-button v-if="props.row.name.endsWith('.md')"
-                                          tag="a" type="is-text"
+                                <!-- Preview Button -->
+                                <b-button tag="a" type="is-text"
                                           icon-left="image" size="is-medium"
-                                          :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}?preview=markdown`"
+                                          :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}`"
                                           target="_blank"
-
                                 ></b-button>
 
                                 <!-- Install Button -->
@@ -493,47 +493,7 @@
 
 <!-- Preview App -->
 <div id="preview" style="display: none;">
-    <zero-md id="preview-markdown" src="#">
-        <template>
-            <!-- Sensible host style defaults -->
-            <style>
-                :host {
-                    display: block;
-                    position: relative;
-                    contain: content;
-                }
-
-                :host([hidden]) {
-                    display: none;
-                }
-
-                .markdown-body {
-                    padding: 4.5rem max(calc(100% - max(1012px, min(1012px, 100%))) / 2, 2.5rem);
-                    min-height: calc(100vh - (2 * 4.5rem));
-                }
-            </style>
-
-            <!-- GitHub markdown styles (light/dark) -->
-            <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css"/>-->
-            <!-- GitHub markdown styles (light) -->
-            <link rel="stylesheet"
-                  href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css"/>
-            <style>
-                .markdown-body {
-                    background: whitesmoke;
-                }
-            </style>
-
-            <!-- Highlightjs Github theme (light) -->
-            <link rel="stylesheet"
-                  href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"/>
-            <!-- Highlightjs Github theme (dark) -->
-            <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" media="(prefers-color-scheme:dark)" /> -->
-
-            <!-- KaTeX styles (needed for math) -->
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css"/>
-        </template>
-    </zero-md>
+    <vue-files-preview :url="fileUrl"></vue-files-preview>
 </div>
 
 <!-- GitHub Corner -->
@@ -629,39 +589,23 @@
     }
 
     // try adjusting bucket url to bucket rest api endpoint
-    let match
-    let type
+    let match, type
 
-    if (!match) {
-        type = 'AWS'
-        // check for urls like https://s3.eu-central-1.amazonaws.com/example-bucket/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/s3\.(?<region>[^.]+)\.amazonaws.com\/(?<name>[^/]+)(\/(?<prefix>[^?]+))?/)
-    }
-    if (!match) {
-        type = 'AWS'
-        // check for urls like http://example-bucket.s3-website-eu-west-1.amazonaws.com/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com(\/(?<prefix>[^?]+))?/)
-    }
-    if (!match) {
-        type = 'AWS'
-        // check for urls like http://example-bucket.s3-website.eu-central-1.amazonaws.com/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com(\/(?<prefix>[^?]+))?/)
-    }
-    if (!match) {
-        type = 'GCP'
-        // check for urls like https://storage.googleapis.com/example-bucket/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/storage\.googleapis\.com\/(?<name>[^/]+)(\/(?<prefix>[^?]+))?/)
-    }
-    if (!match) {
-        type = 'DGO'
-        // check for urls like https://example-bucket.nyc3.digitaloceanspaces.com/index.html
-        // check for urls like https://example-bucket.nyc3.cdn.digitaloceanspaces.com/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.(?<region>[^.]+)\.(?<domain>(cdn\.)?digitaloceanspaces\.com)(\/(?<prefix>[^?]+))?/)
-    }
-    if (!match) {
-        type = 'IBM'
-        // check for urls like http://example-bucket.s3-web.us-south.cloud-object-storage.appdomain.cloud/index.html
-        match = config.bucketUrl.match(/(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-web\.(?<region>[^.]+)\.cloud-object-storage\.appdomain\.cloud(\/(?<prefix>[^?]+))?/)
+    const detectors = [
+        { type: 'AWS', regex: /(?<protocol>[^:]+):\/\/s3\.(?<region>[^.]+)\.amazonaws.com\/(?<name>[^/]+)(\/(?<prefix>[^?]+))?/ },
+        { type: 'AWS', regex: /(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-website-(?<region>[^.]+)\.amazonaws\.com(\/(?<prefix>[^?]+))?/ },
+        { type: 'AWS', regex: /(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-website\.(?<region>[^.]+)\.amazonaws\.com(\/(?<prefix>[^?]+))?/ },
+        { type: 'GCP', regex: /(?<protocol>[^:]+):\/\/storage\.googleapis\.com\/(?<name>[^/]+)(\/(?<prefix>[^?]+))?/ },
+        { type: 'DGO', regex: /(?<protocol>[^:]+):\/\/(?<name>.+)\.(?<region>[^.]+)\.(?<domain>(cdn\.)?digitaloceanspaces\.com)(\/(?<prefix>[^?]+))?/ },
+        { type: 'IBM', regex: /(?<protocol>[^:]+):\/\/(?<name>.+)\.s3-web\.(?<region>[^.]+)\.cloud-object-storage\.appdomain\.cloud(\/(?<prefix>[^?]+))?/ }
+    ];
+
+    for (const detector of detectors) {
+        match = config.bucketUrl.match(detector.regex);
+        if (match) {
+            type = detector.type
+            break
+        }
     }
 
     if (match) {
@@ -696,38 +640,12 @@
 <!-- Main Script -->
 <script>
     const initialHashValue = decodeURIComponent(window.location.hash).replace(/^#/, '') || ''
-    const initialHashValueParams = new URLSearchParams(initialHashValue.replace(/^.*?(\?|$)/, ''))
     // preview mode
-    if (initialHashValueParams.get('preview')) {
-        document.getElementById('app').remove()
-        document.getElementById('preview').style.display = 'block'
-
-        const filePath = initialHashValue.replace(/\?.*$/, '')
-        const fileUrl = urlFromFilePath(filePath)
-
-        const previewFormat = initialHashValueParams.get('preview')
-        const previewElement = document.querySelector(`#preview > #preview-${previewFormat}`);
-        ;// remove all other preview elements
-        [...document.querySelectorAll('#preview > *')]
-            .filter(element => element.id !== previewElement?.id)
-            .forEach(element => element.remove())
-        // set source of preview element
-        switch (previewFormat) {
-            case 'markdown':
-                previewElement.src = fileUrl
-                break
-            default:
-                alert(`Unsupported preview for ${previewFormat} files!`)
-        }
-
-        function urlFromFilePath(filePath) {
-            return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
-        }
-    }
-    // explorer mode
-    else {
+    if (!initialHashValue || initialHashValue.endsWith('/')) {
+        // explorer mode
         document.getElementById('preview').remove()
-        document.getElementById('app').style.display = 'block'
+        const appElementId = 'app'
+        document.getElementById(appElementId).style.display = 'block'
 
         const app = Vue.createApp({
             data() {
@@ -822,6 +740,7 @@
 
                     let totalContentLength = 0;
                     let totalReceivedLength = 0;
+                    let unknownTotal = false; // true if any file lacks Content-Length
 
                     const archiveName = this.pathPrefix.split('/')
                         .filter(part => part.trim()).pop();
@@ -840,7 +759,9 @@
                         archive.add(fileStream);
 
                         const fileResponse = await fetch(url);
-                        totalContentLength += parseInt(fileResponse.headers.get('Content-Length'));
+                        const contentLengthHeader = fileResponse.headers.get('Content-Length');
+                        const contentLength = contentLengthHeader ? Number(contentLengthHeader) : 0;
+                        if (contentLength > 0) totalContentLength += contentLength; else unknownTotal = true;
                         const fileReader = fileResponse.body.getReader();
 
                         while (true) {
@@ -852,10 +773,15 @@
                             fileStream.push(new Uint8Array(value));
 
                             totalReceivedLength += value.length;
-                            this.downloadAllFilesProgress = (
-                                (totalReceivedLength / totalContentLength) +
-                                (this.downloadAllFilesReceivedCount / this.downloadAllFilesCount)
-                            ) / 2;
+                            if (!unknownTotal && totalContentLength > 0) {
+                                this.downloadAllFilesProgress = (
+                                    (totalReceivedLength / totalContentLength) +
+                                    (this.downloadAllFilesReceivedCount / this.downloadAllFilesCount)
+                                ) / 2;
+                            } else {
+                                // fall back to file-count based progress when sizes are unknown
+                                this.downloadAllFilesProgress = (this.downloadAllFilesReceivedCount / this.downloadAllFilesCount);
+                            }
                         }
                         this.downloadAllFilesReceivedCount++;
                     })).then(() => archive.end());
@@ -1025,7 +951,29 @@
             }
         })
         app.use(Buefy.default, {defaultIconPack: 'fas'})
-        app.mount('#app')
+        app.mount(`#${appElementId}`)
+    } else {
+        // preview mode
+        document.getElementById('app').remove()
+        const appElementId = 'preview'
+        document.getElementById(appElementId).style.display = 'block'
+
+        const filePath = initialHashValue.replace(/\?.*$/, '')
+        const fileUrl = urlFromFilePath(filePath)
+
+        function urlFromFilePath(filePath) {
+            return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
+        }
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    fileUrl,
+                }
+            },
+        })
+        app.use(VueFilesPreview)
+        app.mount(`#${appElementId}`)
     }
 </script>
 </body>
