@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.2.0 -->
+<!-- S3 Bucket Explorer Version: 3.2.1 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -383,7 +383,7 @@
                                 <!-- Preview Button -->
                                 <b-button tag="a" type="is-text"
                                           icon-left="image" size="is-medium"
-                                          :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}`"
+                                          :href="`#${pathPrefix.replace(/[^/]*$/, '') + props.row.name}?preview`"
                                           target="_blank"
                                 ></b-button>
 
@@ -639,9 +639,31 @@
 
 <!-- Main Script -->
 <script>
-    const initialHashValue = decodeURIComponent(window.location.hash).replace(/^#/, '') || ''
-    // preview mode
-    if (!initialHashValue || initialHashValue.endsWith('/')) {
+    const initialHashValue = decodeURIComponent(window.location.hash).replace(/^#/, '') ?? ''
+    const paramters = new URLSearchParams(initialHashValue.split(/\?(.*)/s, 2)[1] ?? '') 
+    if (initialHashValue && paramters.has('preview')) {
+      // preview mode
+      document.getElementById('app').remove()
+      const appElementId = 'preview'
+      document.getElementById(appElementId).style.display = 'block'
+
+      const filePath = initialHashValue.replace(/\?.*$/, '')
+      const fileUrl = urlFromFilePath(filePath)
+
+      function urlFromFilePath(filePath) {
+          return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
+      }
+
+      const app = Vue.createApp({
+          data() {
+              return {
+                  fileUrl,
+              }
+          },
+      })
+      app.use(VueFilesPreview)
+      app.mount(`#${appElementId}`)
+    } else {
         // explorer mode
         document.getElementById('preview').remove()
         const appElementId = 'app'
@@ -951,28 +973,6 @@
             }
         })
         app.use(Buefy.default, {defaultIconPack: 'fas'})
-        app.mount(`#${appElementId}`)
-    } else {
-        // preview mode
-        document.getElementById('app').remove()
-        const appElementId = 'preview'
-        document.getElementById(appElementId).style.display = 'block'
-
-        const filePath = initialHashValue.replace(/\?.*$/, '')
-        const fileUrl = urlFromFilePath(filePath)
-
-        function urlFromFilePath(filePath) {
-            return `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodePath(filePath)}`
-        }
-
-        const app = Vue.createApp({
-            data() {
-                return {
-                    fileUrl,
-                }
-            },
-        })
-        app.use(VueFilesPreview)
         app.mount(`#${appElementId}`)
     }
 </script>
