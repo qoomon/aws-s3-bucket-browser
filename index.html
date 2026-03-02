@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.2.1 -->
+<!-- S3 Bucket Explorer Version: 3.2.2 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -59,13 +59,9 @@
             integrity="sha384-5lsW6+t+R0w2ifcEht8EF/ho3i18SjJmTvZChKY3oPX1Kd1qTqv05zzXLCXVXjle"
             crossorigin="anonymous"></script>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/buefy@1.0.1/dist/buefy.min.css"
-          integrity="sha384-emTiB911+IpxcPPEDgfW2BVy+IbeX4uwaQWn7vYxzO+HOI1aH6q6Zop1rZM5mY4U"
-          crossorigin="anonymous">
-
     <script src="https://cdn.jsdelivr.net/npm/buefy@1.0.1/dist/buefy.min.js"
             integrity="sha384-fW1ef2K4IPoLF6PH/tlGxZYb5Bd2qob7p8QRxNhqH8IEvkhRUKJELHBqwwAhJf+V"
-            crossorigin="anonymous"></script>
+            crossorigin="anonymous"></script> <!-- Also see dynamic loaded stylesheet in main script -->
 
     <script src="https://cdn.jsdelivr.net/npm/moment@2.30.1/min/moment.min.js"
             integrity="sha384-jzJ+sNWbKe71gDLLfQKgdtslQjhK70oKLFN+wmwxyg6mQN7Vem+wzce4pryF0HP/"
@@ -77,8 +73,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/vue-files-preview@1.0.41/umd/vue-files-preview.umd.js"
             integrity="sha384-/9EzFuSPCZgaWZ6WZG6nAQCnUzGrHwBTNYkQupo/cgagAl9tm2vixX25E0po+nEj"
-            crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-files-preview@1.0.41/umd/style.css">
+            crossorigin="anonymous"></script> <!-- Also see dynamic loaded stylesheet in main script -->
 
     <!-- Explorer App Style -->
     <style>
@@ -566,6 +561,12 @@
         }
         return encodeURI(path).split("").map(char => replaceChars[char] || char).join("");
     }
+    
+    function addLink(linkProps){
+        const link = document.createElement('link')
+        Object.assign(link, linkProps)
+        document.head.appendChild(link)
+    }
 </script>
 
 <!-- Config Script -->
@@ -643,6 +644,12 @@
     const paramters = new URLSearchParams(initialHashValue.split(/\?(.*)/s, 2)[1] ?? '') 
     if (initialHashValue && paramters.has('preview')) {
       // preview mode
+      addLink({
+        rel:"stylesheet",
+        href: "https://cdn.jsdelivr.net/npm/vue-files-preview@1.0.41/umd/style.css",
+        crossOrigin:"anonymous",
+      })
+      
       document.getElementById('app').remove()
       const appElementId = 'preview'
       document.getElementById(appElementId).style.display = 'block'
@@ -665,6 +672,12 @@
       app.mount(`#${appElementId}`)
     } else {
         // explorer mode
+        addLink({
+          rel:"stylesheet",
+          href: "https://cdn.jsdelivr.net/npm/buefy@1.0.1/dist/buefy.min.css",
+          crossOrigin:"anonymous",
+        })
+        
         document.getElementById('preview').remove()
         const appElementId = 'app'
         document.getElementById(appElementId).style.display = 'block'
