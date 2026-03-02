@@ -1,4 +1,4 @@
-<!-- S3 Bucket Explorer Version: 3.3.0 -->
+<!-- S3 Bucket Explorer Version: 3.3.1 -->
 
 <!DOCTYPE html>
 <html lang="en" style="overflow-y: auto;">
@@ -76,8 +76,11 @@
 
     <!-- Explorer App Style -->
     <style>
-        * {
-            --primary-color: #5c9af3;
+        body {
+            --bulma-primary: hsl(200deg 100% 45%);
+            --bulma-primary-h: 200deg;
+            --bulma-primary-s: 100%;
+            --bulma-primary-l: 45%;
         }
 
         body {
@@ -92,10 +95,6 @@
              body {
                  background-color: #222225;
              }
-        }
-
-        a {
-            color: var(--primary-color);
         }
 
         #app {
@@ -115,24 +114,9 @@
         }
 
         #app .search-prefix-matches-path-prefix input.input {
-            color: var(--primary-color) !important;
             font-weight: bold;
         }
-
-        #app .button.is-primary {
-            background-color: var(--primary-color) !important;
-        }
-
-        #app .button.is-primary.is-outlined {
-            background-color: transparent !important;
-            border-color: var(--primary-color) !important;
-            color: var(--primary-color) !important;
-        }
-
-        #app .button.is-primary.is-outlined.is-loading::after {
-            border-color: transparent transparent var(--primary-color) var(--primary-color) !important;
-        }
-
+     
         #app .table .button.is-text {
             padding: .1em .75em;
             height: auto;
@@ -140,7 +124,7 @@
             box-shadow: none;
             background-color: unset;
             user-select: text;
-            color: var(--primary-color);
+
             font-weight: 500;
             text-align: left;
             overflow: hidden;
@@ -169,12 +153,7 @@
 
         #app .input:focus:not(.is-danger),
         #app .select select:focus {
-            border-color: var(--primary-color);
             box-shadow: none;
-        }
-
-        #app .select:not(.is-multiple):not(.is-loading)::after {
-            border-color: var(--primary-color) !important;
         }
 
         #app .name-column > div:first-child {
@@ -311,31 +290,30 @@
                                 icon-pack="fas"
                                 icon-left="download"
                                 @click="downloadAllFiles"
-                                style="margin-left: 0.7rem; height: fit-content;"
+                                style=" height: fit-content; margin-left: 0.7rem;"
                         ></b-button>
 
                         <!-- Paginating Buttons -->
-                        <div class="container"
-                             v-if="nextContinuationToken || previousContinuationTokens.length > 0"
-                             style="display: contents;">
-                            <div style="margin-left: 0.6rem;"></div>
-
-                            <b-button
-                                    type="is-primary" rounded
-                                    icon-pack="fas"
-                                    icon-left="angle-left"
-                                    @click="previousPage"
-                                    :disabled="previousContinuationTokens.length === 0"
-                            >
-                            </b-button>
-                            <b-button
-                                    type="is-primary" rounded
-                                    icon-pack="fas"
-                                    icon-right="angle-right"
-                                    @click="nextPage"
-                                    :disabled="!nextContinuationToken"
-                            >
-                            </b-button>
+                        <div style="margin-left: 1.0rem;">
+                            <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
+                                 class="buttons is-pulled-right">
+                                <b-button
+                                        type="is-primary" rounded
+                                        icon-pack="fas"
+                                        icon-left="angle-left"
+                                        @click="previousPage"
+                                        :disabled="previousContinuationTokens.length === 0"
+                                >
+                                </b-button>
+                                <b-button
+                                        type="is-primary" rounded
+                                        icon-pack="fas"
+                                        icon-right="angle-right"
+                                        @click="nextPage"
+                                        :disabled="!nextContinuationToken"
+                                >
+                                </b-button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -466,7 +444,7 @@
             </b-table>
 
             <!-- Paginating Buttons -->
-            <div class="container is-clearfix" style="margin-top: 1rem;">
+            <div class="is-clearfix" style="margin-top: 1rem;">
                 <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
                      class="buttons is-pulled-right">
                     <b-button
