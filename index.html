@@ -635,9 +635,20 @@
       // preview mode
       addLink({
         rel:"stylesheet",
+        href: "https://cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.css",
+        crossOrigin:"anonymous",
+      })
+      addLink({
+        rel:"stylesheet",
+        href: "https://cdn.jsdelivr.net/highlight.js/9.1.0/styles/github.min.css"",
+        crossOrigin:"anonymous",
+      })
+      addLink({
+        rel:"stylesheet",
         href: "https://cdn.jsdelivr.net/npm/vue-files-preview@1.0.41/umd/style.css",
         crossOrigin:"anonymous",
       })
+    
       
       document.getElementById('app').remove()
       const appElementId = 'preview'
