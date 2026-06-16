@@ -293,6 +293,16 @@
                                 style=" height: fit-content; margin-left: 0.7rem;"
                         ></b-button>
 
+                        <!-- Download Selected Button -->
+                        <b-button
+                                v-if="checkedRows.length > 0"
+                                type="is-primary" rounded :loading="downloadAllFilesProgress !== null"
+                                icon-pack="fas"
+                                icon-left="download"
+                                @click="downloadSelectedFiles"
+                                style=" height: fit-content; margin-left: 0.7rem;"
+                        >{{ checkedRows.length }}</b-button>
+
                         <!-- Paginating Buttons -->
                         <div style="margin-left: 1.0rem;">
                             <div v-show="nextContinuationToken || previousContinuationTokens.length > 0"
@@ -336,6 +346,11 @@
                     :default-sort="config.defaultOrder.split('-')[0]"
                     :default-sort-direction="config.defaultOrder.split('-')[1]"
                     :mobile-cards="true"
+                    checkable
+                    checkbox-position="left"
+                    :checked-rows="checkedRows"
+                    :is-row-checkable="(row) => row.type === 'content'"
+                    @check="(rows) => checkedRows = rows.filter(row => row.type === 'content')"
             >
                 <b-table-column
                         v-slot="props"
@@ -699,6 +714,8 @@
                     downloadAllFilesCount: null,
                     downloadAllFilesReceivedCount: null,
                     downloadAllFilesProgress: null,
+
+                    checkedRows: [],
                 }
             },
             computed: {
@@ -729,6 +746,10 @@
                     this.searchPrefix = this.pathPrefix.replace(/^.*\//, '')
                     window.location.hash = this.pathPrefix
                     this.refresh()
+                },
+                pathContentTableData() {
+                    // reset selection whenever the listing changes (navigation, pagination, search)
+                    this.checkedRows = []
                 }
             },
             methods: {
@@ -762,14 +783,12 @@
                         this.refresh()
                     }
                 },
-                async downloadAllFiles() {
+                // Download the given file urls as a single zip archive (shared by
+                // "download all" and "download selected").
+                async downloadFilesAsZip(urls, archiveName) {
+                    if (!urls || urls.length === 0) return;
 
-
-                    const archiveFiles = this.pathContentTableData
-                        .filter(item => item.type === 'content')
-                        .map(item => item.url);
-
-                    this.downloadAllFilesCount = archiveFiles.length;
+                    this.downloadAllFilesCount = urls.length;
                     this.downloadAllFilesReceivedCount = 0;
                     this.downloadAllFilesProgress = 0;
 
@@ -777,16 +796,14 @@
                     let totalReceivedLength = 0;
                     let unknownTotal = false; // true if any file lacks Content-Length
 
-                    const archiveName = this.pathPrefix.split('/')
-                        .filter(part => part.trim()).pop();
-                    console.debug(`create archive for ${archiveName}...`)
+                    console.debug(`create archive ${archiveName}...`)
                     const archiveData = []
                     const archive = new fflate.Zip((err, data, final) => {
                         if (err) throw err;
                         archiveData.push(data);
                     });
 
-                    await Promise.all(archiveFiles.map(async (url) => {
+                    await Promise.all(urls.map(async (url) => {
                         const fileName = url.split('/')
                             .filter(part => part.trim()).pop();
                         console.debug(`downloading ${fileName}...`);
@@ -833,6 +850,23 @@
                     this.downloadAllFilesCount = null;
                     this.downloadAllFilesReceivedCount = null;
                     this.downloadAllFilesProgress = null;
+                },
+                async downloadAllFiles() {
+                    const urls = this.pathContentTableData
+                        .filter(item => item.type === 'content')
+                        .map(item => item.url);
+                    const archiveName = this.pathPrefix.split('/')
+                        .filter(part => part.trim()).pop();
+                    await this.downloadFilesAsZip(urls, archiveName);
+                },
+                async downloadSelectedFiles() {
+                    const urls = this.checkedRows
+                        .filter(row => row.type === 'content')
+                        .map(row => row.url);
+                    const archiveName = this.pathPrefix.split('/')
+                        .filter(part => part.trim()).pop();
+                    await this.downloadFilesAsZip(urls, archiveName);
+                    this.checkedRows = [];
                 },
                 async refresh() {
                     let listBucketResult
